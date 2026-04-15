@@ -1,0 +1,68 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mentoris\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-13 09:51+0000\n"
+"PO-Revision-Date: 2026-04-13 09:51+0000\n"
+"Last-Translator: Antigravity\n"
+"Language: uz\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Mentor AI"
+msgstr "Mentor AI"
+
+msgid "Daily Assistant"
+msgstr "Kunlik yordamchi"
+
+msgid "Knowledge Base"
+msgstr "Bilimlar bazasi"
+
+msgid "Career Hub"
+msgstr "Karyera markazi"
+
+msgid "Gov Services"
+msgstr "Davlat xizmatlari"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Support"
+msgstr "Qo'llab-quvvatlash"
+
+msgid "Logout"
+msgstr "Chiqish"
+
+msgid "New Chat"
+msgstr "Yangi xona"
+
+msgid "Chat History"
+msgstr "Suhbatlar tarixi"
+
+msgid "Welcome back,"
+msgstr "Xush kelibsiz,"
+
+msgid "Personalized Guidance"
+msgstr "Shaxsiy tavsiyalar"
+
+msgid "Education & Grants"
+msgstr "Ta'lim va Grantlar"
+
+msgid "View"
+msgstr "Ko'rish"
+
+msgid "Career Road"
+msgstr "Karyera yo'li"
+
+msgid "Explore"
+msgstr "Ko'rish"
+
+msgid "Online"
+msgstr "Onlayn"
+
+msgid "Ask Mentor AI..."
+msgstr "Mentor AI dan so'rang..."
+
+msgid "Your discoveries and growth are the priority of the Mentoris platform."
+msgstr "Sizning kashfiyotlaringiz va o'sishingiz Mentoris platformasining ustuvor yo'nalishidir."

@@ -1,0 +1,68 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mentoris\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-13 09:51+0000\n"
+"PO-Revision-Date: 2026-04-13 09:51+0000\n"
+"Last-Translator: Antigravity\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Mentor AI"
+msgstr "Ментор ИИ"
+
+msgid "Daily Assistant"
+msgstr "Дневной помощник"
+
+msgid "Knowledge Base"
+msgstr "База знаний"
+
+msgid "Career Hub"
+msgstr "Центр карьеры"
+
+msgid "Gov Services"
+msgstr "Гос. услуги"
+
+msgid "Profile"
+msgstr "Профиль"
+
+msgid "Support"
+msgstr "Поддержка"
+
+msgid "Logout"
+msgstr "Выйти"
+
+msgid "New Chat"
+msgstr "Новый чат"
+
+msgid "Chat History"
+msgstr "История чата"
+
+msgid "Welcome back,"
+msgstr "С возвращением,"
+
+msgid "Personalized Guidance"
+msgstr "Персональные советы"
+
+msgid "Education & Grants"
+msgstr "Образование и гранты"
+
+msgid "View"
+msgstr "Посмотреть"
+
+msgid "Career Road"
+msgstr "Карьерный путь"
+
+msgid "Explore"
+msgstr "Исследовать"
+
+msgid "Online"
+msgstr "В сети"
+
+msgid "Ask Mentor AI..."
+msgstr "Спросите Ментор ИИ..."
+
+msgid "Your discoveries and growth are the priority of the Mentoris platform."
+msgstr "Ваши открытия и рост являются приоритетом платформы Mentoris."

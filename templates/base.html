@@ -1,0 +1,599 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html class="light" lang="{{ request.LANGUAGE_CODE|default:'uz' }}">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Mentoris - {% block title %}{% endblock %}</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#124f83",
+                        "secondary": "#4646d8",
+                        "background": "#f7f9fe",
+                        "surface": "#f7f9fe",
+                        "on-surface": "#181c20",
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        .gradient-button { background: linear-gradient(135deg, #124f83 0%, #33679d 100%); }
+        .aura-thinking { background: radial-gradient(circle, rgba(70,70,216,0.05) 0%, rgba(70,70,216,0) 70%); }
+        .lang-btn { cursor: pointer; font-weight: 600; font-size: 12px; transition: color 0.2s; }
+        .lang-btn:hover { color: #124f83; }
+        .lang-active { color: #124f83; border-bottom: 2px solid #124f83; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #c2c7d1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        /* ── Mentor Panel (slides in from right) ── */
+        #mentor-panel {
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: 480px;
+            background: #f7f9fe;
+            box-shadow: -12px 0 48px rgba(18,79,131,0.12);
+            z-index: 300;
+            transform: translateX(100%);
+            transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #e8edf5;
+        }
+        #mentor-panel.panel-open { transform: translateX(0); }
+
+        #panel-overlay {
+            position: fixed; inset: 0;
+            background: rgba(18,79,131,0.12);
+            backdrop-filter: blur(3px);
+            z-index: 299;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.38s;
+        }
+        #panel-overlay.overlay-show { opacity: 1; pointer-events: all; }
+
+        /* Floating Mentor Button */
+        #mentor-fab {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            z-index: 298;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #124f83, #4646d8);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 32px rgba(18,79,131,0.35);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+        }
+        #mentor-fab:hover { transform: scale(1.1); box-shadow: 0 12px 40px rgba(18,79,131,0.45); }
+        #mentor-fab:active { transform: scale(0.95); }
+        #mentor-fab .pulse-ring {
+            position: absolute; inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(18,79,131,0.3);
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        @keyframes pulse-ring {
+            0%   { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        /* Panel inner layout */
+        .panel-history-item { transition: all 0.15s; }
+        .panel-history-item:hover { background: white; box-shadow: 0 2px 12px rgba(18,79,131,0.08); }
+        .panel-history-item.active { background: #124f83; color: white; }
+        .panel-history-item.active p { color: rgba(255,255,255,0.7) !important; }
+
+        /* Typing dots */
+        .typing-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #94a3b8; display: inline-block;
+            animation: typing-bounce 1.2s ease-in-out infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing-bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background text-on-surface font-body overflow-hidden">
+<div class="flex h-screen w-full">
+
+    <!-- ══════════════════ SIDEBAR ══════════════════ -->
+    <aside class="flex flex-col h-screen p-6 gap-6 border-r border-slate-100 bg-[#f7f9fe] w-72 shrink-0">
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
+                <span class="material-symbols-outlined">psychology</span>
+            </div>
+            <div>
+                <h1 class="text-lg font-black text-primary leading-none">Mentoris</h1>
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Intelligent Mentor</p>
+            </div>
+        </div>
+
+        <!-- New Consultation button -->
+        <button onclick="openMentorPanel(); createNewPanelSession();"
+            class="w-full py-3 px-4 gradient-button text-white rounded-xl font-headline text-sm font-bold shadow-md hover:opacity-90 transition-all flex items-center justify-center gap-2 active:scale-95">
+            <span class="material-symbols-outlined text-sm">add</span>
+            {{ T.new_consultation }}
+        </button>
+
+        <!-- Nav Links -->
+        <nav class="flex-1 flex flex-col gap-1">
+            <a href="{% url 'mentor_ai' %}"
+                class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
+                {% if request.resolver_match.url_name == 'mentor_ai' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'mentor_ai' %}style="font-variation-settings:'FILL' 1"{% endif %}>psychology</span>
+                {{ T.mentor_ai }}
+            </a>
+
+            <a href="{% url 'dashboard' %}"
+                class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
+                {% if request.resolver_match.url_name == 'dashboard' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'dashboard' %}style="font-variation-settings:'FILL' 1"{% endif %}>today</span>
+                {{ T.daily_assistant }}
+            </a>
+
+            <a href="{% url 'knowledge_base' %}"
+                class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
+                {% if request.resolver_match.url_name == 'knowledge_base' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'knowledge_base' %}style="font-variation-settings:'FILL' 1"{% endif %}>database</span>
+                {{ T.knowledge_base }}
+            </a>
+
+            <a href="{% url 'career_hub' %}"
+                class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
+                {% if request.resolver_match.url_name == 'career_hub' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'career_hub' %}style="font-variation-settings:'FILL' 1"{% endif %}>work</span>
+                {{ T.career_hub }}
+            </a>
+
+            <a href="{% url 'gov_services' %}"
+                class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
+                {% if request.resolver_match.url_name == 'gov_services' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'gov_services' %}style="font-variation-settings:'FILL' 1"{% endif %}>account_balance</span>
+                {{ T.gov_services }}
+            </a>
+        </nav>
+
+        <!-- Bottom links -->
+        <div class="flex flex-col gap-1 pt-4 border-t border-slate-100">
+            <a href="{% url 'profile_settings' %}"
+                class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
+                {% if request.resolver_match.url_name == 'profile_settings' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'profile_settings' %}style="font-variation-settings:'FILL' 1"{% endif %}>account_circle</span>
+                {{ T.profile }}
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
+                <span class="material-symbols-outlined">help</span>{{ T.support }}
+            </a>
+            <a href="{% url 'account_logout' %}" class="flex items-center gap-3 p-3 text-sm font-medium text-slate-600 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                <span class="material-symbols-outlined">logout</span>{{ T.logout }}
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══════════════════ MAIN ══════════════════ -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <!-- Header -->
+        <header class="flex justify-between items-center w-full px-10 py-4 bg-[#f7f9fe] sticky top-0 z-10 border-b border-slate-100/50">
+            <div class="flex items-center flex-1 max-w-xl">
+                <div class="relative w-full">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                    <input class="w-full pl-12 pr-4 py-2.5 bg-white border-none rounded-full text-sm focus:ring-2 focus:ring-primary/20 transition-all shadow-sm" placeholder="{{ T.search_placeholder }}" type="text"/>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <!-- Language -->
+                <form action="{% url 'set_language' %}" method="post" class="flex gap-3 text-slate-400 border-r pr-6 border-slate-200">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.path }}">
+                    <button name="language" value="uz" class="lang-btn {% if request.LANGUAGE_CODE == 'uz' %}lang-active{% endif %}">UZ</button>
+                    <button name="language" value="ru" class="lang-btn {% if request.LANGUAGE_CODE == 'ru' %}lang-active{% endif %}">RU</button>
+                    <button name="language" value="en" class="lang-btn {% if request.LANGUAGE_CODE == 'en' %}lang-active{% endif %}">EN</button>
+                </form>
+
+                {% if user.is_authenticated %}
+                <div class="flex items-center gap-4">
+                    <!-- Notifications -->
+                    <div class="relative dropdown-container">
+                        <button onclick="toggleNotif()" class="p-2 text-slate-500 hover:bg-slate-100 rounded-full relative transition-all active:scale-90">
+                            <span class="material-symbols-outlined">notifications</span>
+                            {% if unread_notifications_count > 0 %}
+                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-bounce"></span>
+                            {% endif %}
+                        </button>
+                        <div id="notif-menu" class="hidden absolute right-0 mt-3 w-80 bg-white border border-slate-100 shadow-2xl rounded-3xl overflow-hidden z-[400]">
+                            <div class="p-4 border-b border-slate-50 flex items-center justify-between">
+                                <h5 class="font-headline font-bold text-primary">{{ T.notifications }}</h5>
+                                <button onclick="markAllRead()" class="text-[10px] font-bold text-secondary uppercase hover:underline">{{ T.mark_all_read }}</button>
+                            </div>
+                            <div id="notif-list" class="max-h-80 overflow-y-auto custom-scrollbar p-2">
+                                <div class="flex justify-center py-6"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="relative dropdown-container">
+                        <button onclick="toggleSettings()" class="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-all active:scale-90">
+                            <span class="material-symbols-outlined">settings</span>
+                        </button>
+                        <div id="settings-menu" class="hidden absolute right-0 mt-3 w-56 bg-white border border-slate-100 shadow-2xl rounded-3xl overflow-hidden z-[400]">
+                            <div class="p-4 border-b border-slate-50">
+                                <h5 class="font-headline font-bold text-primary">{{ T.settings_title }}</h5>
+                            </div>
+                            <div class="p-2 flex flex-col">
+                                <a href="{% url 'profile_settings' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-50 group">
+                                    <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">person_outline</span>
+                                    <span class="text-sm font-semibold text-slate-600 group-hover:text-primary">{{ T.my_profile }}</span>
+                                </a>
+                                <a href="{% url 'profile_settings' %}#security" class="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-50 group">
+                                    <span class="material-symbols-outlined text-slate-400 group-hover:text-secondary">shield</span>
+                                    <span class="text-sm font-semibold text-slate-600 group-hover:text-secondary">{{ T.security }}</span>
+                                </a>
+                                <div class="h-px bg-slate-50 my-2"></div>
+                                <a href="{% url 'account_logout' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-red-50 group">
+                                    <span class="material-symbols-outlined text-slate-400 group-hover:text-red-500">logout</span>
+                                    <span class="text-sm font-semibold text-slate-600 group-hover:text-red-500">{{ T.logout }}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User avatar -->
+                <a href="{% url 'profile_settings' %}" class="flex items-center gap-3 pl-2 border-l border-slate-200 cursor-pointer">
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-primary font-headline">{{ user.get_full_name|default:user.email }}</p>
+                        <p class="text-[10px] text-slate-500 font-medium">{{ user.profile.major|default:"Professional" }}</p>
+                    </div>
+                    <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm"
+                         src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ user.email }}" alt="Avatar"/>
+                </a>
+                {% else %}
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'account_login' %}" class="text-sm font-extrabold text-primary hover:text-secondary px-4 py-2 hover:bg-slate-50 rounded-xl transition-colors">{{ T.login_title }}</a>
+                    <a href="{% url 'account_signup' %}" class="px-8 py-3 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-all">{{ T.signup_title }}</a>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Django flash messages -->
+        {% if messages %}
+        <div class="fixed top-24 right-12 z-[500] space-y-3 pointer-events-none">
+            {% for message in messages %}
+            <div class="pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-sm font-bold
+                {% if message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800
+                {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800
+                {% else %}bg-white border-slate-200 text-slate-800{% endif %}">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">
+                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+                </span>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-10">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<!-- ══════════════════ FLOATING MENTOR BUTTON ══════════════════ -->
+{% if user.is_authenticated %}
+<button id="mentor-fab" onclick="openMentorPanel()" title="Mentor AI">
+    <div class="pulse-ring"></div>
+    <span class="material-symbols-outlined text-3xl" style="font-variation-settings:'FILL' 1">psychology</span>
+</button>
+{% endif %}
+
+<!-- Dark overlay -->
+<div id="panel-overlay" onclick="closeMentorPanel()"></div>
+
+<!-- ══════════════════ MENTOR AI SIDE PANEL ══════════════════ -->
+<div id="mentor-panel">
+    <!-- Panel Header -->
+    <div class="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1">psychology</span>
+            </div>
+            <div>
+                <h3 class="font-headline font-black text-primary leading-none">Mentor AI</h3>
+                <span class="text-[10px] text-emerald-500 font-bold flex items-center gap-1 mt-0.5">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse inline-block"></span> {{ T.online }}
+                </span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <!-- toggle history -->
+            <button onclick="togglePanelHistory()" id="history-toggle-btn"
+                class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-500 bg-slate-100 hover:bg-primary hover:text-white rounded-xl transition-all">
+                <span class="material-symbols-outlined text-base">history</span>
+                {{ T.history_short }}
+            </button>
+            <!-- new session -->
+            <button onclick="createNewPanelSession()"
+                class="w-9 h-9 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white flex items-center justify-center transition-all">
+                <span class="material-symbols-outlined text-xl">edit_square</span>
+            </button>
+            <!-- close -->
+            <button onclick="closeMentorPanel()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-all">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Panel body: history + chat -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- History Sidebar -->
+        <div id="history-sidebar" class="w-48 shrink-0 bg-white border-r border-slate-100 flex flex-col overflow-hidden transition-all duration-300">
+            <div class="p-3 border-b border-slate-50">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ T.chat_sessions }}</p>
+            </div>
+            <div id="session-list" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+                <div class="flex justify-center py-4">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div id="panel-chat" class="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar bg-[#f7f9fe]"></div>
+            <div class="p-4 bg-white border-t border-slate-100 shrink-0">
+                <div class="relative">
+                    <textarea id="panel-msg" onkeydown="handlePanelKey(event)"
+                        class="w-full bg-slate-50 border-none rounded-2xl p-4 pr-14 text-sm resize-none focus:ring-2 focus:ring-primary/20 transition-all font-medium custom-scrollbar"
+                        placeholder="{{ T.ask_panel_mentor }}" rows="2"></textarea>
+                    <button onclick="sendPanelMessage()"
+                        class="absolute bottom-3 right-3 w-10 h-10 gradient-button rounded-xl text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform">
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const LANG_PREFIX_BASE = "/{{ request.LANGUAGE_CODE|default:'uz' }}";
+    let activePanelSessionId = null;
+    let historyVisible = true;
+    let panelLoaded = false;
+
+    // ── Panel open/close ──────────────────────────────────────
+    function openMentorPanel() {
+        document.getElementById('mentor-panel').classList.add('panel-open');
+        document.getElementById('panel-overlay').classList.add('overlay-show');
+        if (!panelLoaded) { loadPanelSessions(); panelLoaded = true; }
+    }
+    function closeMentorPanel() {
+        document.getElementById('mentor-panel').classList.remove('panel-open');
+        document.getElementById('panel-overlay').classList.remove('overlay-show');
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMentorPanel(); });
+
+    // ── History sidebar toggle ────────────────────────────────
+    function togglePanelHistory() {
+        historyVisible = !historyVisible;
+        const sidebar = document.getElementById('history-sidebar');
+        const btn = document.getElementById('history-toggle-btn');
+        if (historyVisible) {
+            sidebar.style.width = '12rem';
+            sidebar.style.opacity = '1';
+            btn.classList.remove('bg-primary','text-white');
+        } else {
+            sidebar.style.width = '0';
+            sidebar.style.opacity = '0';
+            btn.classList.add('bg-primary','text-white');
+        }
+    }
+
+    // ── Load sessions ─────────────────────────────────────────
+    async function loadPanelSessions() {
+        try {
+            const resp = await fetch(`${LANG_PREFIX_BASE}/api/sessions/`);
+            const data = await resp.json();
+            renderSessionList(data.sessions, data.active_id);
+            loadPanelSession(data.active_id);
+        } catch(e) {
+            appendPanelMsg('assistant', "{{ T.mentor_greeting|escapejs }}");
+        }
+    }
+
+    function renderSessionList(sessions, activeId) {
+        const list = document.getElementById('session-list');
+        list.innerHTML = '';
+        (sessions || []).forEach(s => {
+            const el = document.createElement('button');
+            el.className = `panel-history-item w-full text-left px-3 py-2.5 rounded-xl ${s.id == activeId ? 'active' : ''}`;
+            el.innerHTML = `<p class="text-xs font-bold truncate text-slate-700">${s.title}</p>
+                <p class="text-[9px] text-slate-400 font-medium mt-0.5">${s.updated_at}</p>`;
+            el.onclick = () => {
+                document.querySelectorAll('.panel-history-item').forEach(i => i.classList.remove('active'));
+                el.classList.add('active');
+                loadPanelSession(s.id);
+            };
+            list.appendChild(el);
+        });
+    }
+
+    async function loadPanelSession(sessionId) {
+        if (!sessionId) return;
+        activePanelSessionId = sessionId;
+        const chat = document.getElementById('panel-chat');
+        chat.innerHTML = `<div class="flex justify-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
+        try {
+            const resp = await fetch(`${LANG_PREFIX_BASE}/api/session/${sessionId}/messages/`);
+            const data = await resp.json();
+            chat.innerHTML = '';
+            if (!data.messages || data.messages.length === 0) {
+                appendPanelMsg('assistant', "{{ T.mentor_greeting|escapejs }}");
+            } else {
+                data.messages.forEach(m => appendPanelMsg(m.role, m.content));
+            }
+            scrollPanelChat();
+        } catch(e) {
+            chat.innerHTML = '';
+            appendPanelMsg('assistant', "{{ T.mentor_greeting|escapejs }}");
+        }
+    }
+
+    // ── Send message ──────────────────────────────────────────
+    function handlePanelKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPanelMessage(); }
+    }
+
+    async function sendPanelMessage() {
+        const input = document.getElementById('panel-msg');
+        const msg = input.value.trim();
+        if (!msg) return;
+        input.value = '';
+        appendPanelMsg('user', msg);
+        scrollPanelChat();
+
+        // Typing indicator
+        const chat = document.getElementById('panel-chat');
+        const typingId = 'typing-' + Date.now();
+        chat.insertAdjacentHTML('beforeend', `
+            <div id="${typingId}" class="flex items-start gap-2">
+                <div class="bg-white px-4 py-3 rounded-2xl rounded-tl-none shadow-sm flex gap-1 items-center">
+                    <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+                </div>
+            </div>`);
+        scrollPanelChat();
+
+        try {
+            const resp = await fetch("{% url 'chat_api' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ message: msg, session_id: activePanelSessionId })
+            });
+            const data = await resp.json();
+            document.getElementById(typingId)?.remove();
+            appendPanelMsg('assistant', data.answer);
+            scrollPanelChat();
+        } catch(e) {
+            document.getElementById(typingId)?.remove();
+            appendPanelMsg('assistant', "{{ T.mentor_error|escapejs }}");
+        }
+    }
+
+    function appendPanelMsg(role, content) {
+        const chat = document.getElementById('panel-chat');
+        const isUser = role === 'user';
+        chat.insertAdjacentHTML('beforeend', `
+            <div class="flex flex-col gap-1 ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[90%]">
+                <div class="${isUser ? 'gradient-button text-white' : 'bg-white text-slate-700 shadow-sm'} px-4 py-3 rounded-2xl ${isUser ? 'rounded-tr-sm' : 'rounded-tl-sm'} text-sm leading-relaxed">
+                    ${content}
+                </div>
+            </div>`);
+    }
+
+    function scrollPanelChat() {
+        const chat = document.getElementById('panel-chat');
+        if (chat) chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function createNewPanelSession() {
+        try {
+            const resp = await fetch(`${LANG_PREFIX_BASE}/api/session/create/`, {
+                method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await resp.json();
+            activePanelSessionId = data.session_id;
+            panelLoaded = false;
+            loadPanelSessions();
+        } catch(e) { console.error(e); }
+    }
+
+    // ── Notifications ─────────────────────────────────────────
+    function toggleNotif() {
+        const m = document.getElementById('notif-menu');
+        document.getElementById('settings-menu')?.classList.add('hidden');
+        m.classList.toggle('hidden');
+        if (!m.classList.contains('hidden')) fetchNotifications();
+    }
+    function toggleSettings() {
+        const m = document.getElementById('settings-menu');
+        document.getElementById('notif-menu')?.classList.add('hidden');
+        m.classList.toggle('hidden');
+    }
+    window.addEventListener('click', e => {
+        if (!e.target.closest('.dropdown-container')) {
+            document.getElementById('notif-menu')?.classList.add('hidden');
+            document.getElementById('settings-menu')?.classList.add('hidden');
+        }
+    });
+
+    async function fetchNotifications() {
+        const list = document.getElementById('notif-list');
+        try {
+            const resp = await fetch(`${LANG_PREFIX_BASE}/api/notifications/`);
+            const data = await resp.json();
+            list.innerHTML = '';
+            if (!data.notifications.length) {
+                list.innerHTML = `<div class="p-6 text-center text-slate-400 text-sm font-medium">{{ T.no_notifications }}</div>`;
+                return;
+            }
+            data.notifications.forEach(n => {
+                const item = document.createElement('div');
+                item.className = `p-4 mb-1.5 rounded-2xl cursor-pointer border transition-all ${n.is_read ? 'bg-white border-transparent' : 'bg-blue-50/50 border-blue-100/50'}`;
+                item.innerHTML = `<div class="flex justify-between items-start mb-1"><h6 class="text-sm font-bold text-primary">${n.title}</h6><span class="text-[10px] text-slate-400 font-bold">${n.created_at}</span></div><p class="text-xs text-slate-500 leading-relaxed truncate">${n.message}</p>`;
+                item.onclick = () => window.location.href = n.link;
+                list.appendChild(item);
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function markAllRead() {
+        try {
+            const resp = await fetch(`${LANG_PREFIX_BASE}/api/notifications/mark-all-read/`, {
+                method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await resp.json();
+            if (data.success) location.reload();
+        } catch(e) { console.error(e); }
+    }
+
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+        if (input.type === 'password') { input.type = 'text'; icon.innerText = 'visibility_off'; }
+        else { input.type = 'password'; icon.innerText = 'visibility'; }
+    }
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

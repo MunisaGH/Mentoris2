@@ -1,0 +1,7 @@
+django
+cryptography
+groq
+python-dotenv
+django-allauth
+requests
+PyJWT

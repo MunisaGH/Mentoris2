@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Knowledge Base{% endblock %}
+
+{% block content %}
+<div class="px-10 pb-12 space-y-10">
+    <section class="mt-8">
+        <h2 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Knowledge Base</h2>
+        <p class="text-slate-500 mt-2 max-w-2xl">Manage your academic ecosystem. Let the Mentor AI curate your research papers and lectures[cite: 3, 59].</p>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        <div class="lg:col-span-5 bg-white rounded-3xl p-8 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-primary/40 transition-all group cursor-pointer">
+            <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
+            </div>
+            <h3 class="font-headline font-bold text-lg">Upload Documents</h3>
+            <p class="text-sm text-slate-400 text-center mt-2 px-6">Drag and drop your PDFs, Word files, or notes to begin AI indexing[cite: 42, 52].</p>
+            <button class="mt-6 px-6 py-2.5 rounded-full border border-slate-200 text-sm font-semibold text-primary hover:bg-slate-50 transition-colors">Browse Files</button>
+        </div>
+
+        <div class="lg:col-span-7 bg-white rounded-3xl shadow-sm flex flex-col border border-slate-100">
+            <div class="px-8 py-5 border-b border-slate-50 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    <h3 class="font-headline font-bold text-base text-primary">AI Document Assistant</h3>
+                </div>
+                <span class="text-[10px] font-bold text-secondary uppercase bg-purple-50 px-2 py-1 rounded">RAG Enabled</span>
+            </div>
+            <div class="flex-1 p-8 space-y-6">
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-slate-500 text-sm">smart_toy</span>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl rounded-tl-none text-sm text-slate-600">
+                        Hello Alex! I've analyzed your recent documents. Ask me to summarize any file or find connections between lectures[cite: 55, 58].
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 m-4 rounded-2xl flex items-center gap-3 border border-slate-100">
+                <input class="bg-transparent border-none focus:ring-0 text-sm flex-1 placeholder:text-slate-400 px-2" placeholder="Ask about your documents..." type="text"/>
+                <button class="w-10 h-10 gradient-button rounded-xl text-white flex items-center justify-center shadow-md">
+                    <span class="material-symbols-outlined text-sm">send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="flex items-center gap-3 overflow-x-auto pb-2">
+            <button class="px-6 py-2 bg-primary text-white rounded-full text-xs font-bold">All Sources</button>
+            <button class="px-6 py-2 bg-white text-slate-500 border border-slate-100 rounded-full text-xs font-bold">Lectures</button>
+            <button class="px-6 py-2 bg-white text-slate-500 border border-slate-100 rounded-full text-xs font-bold">Research Papers</button>
+        </div>
+
+        <div class="grid grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-3xl group border border-slate-100 hover:shadow-lg transition-all cursor-pointer">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all text-red-500">
+                        <span class="material-symbols-outlined">picture_as_pdf</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-secondary uppercase">Summarized [cite: 55]</span>
+                </div>
+                <h4 class="font-headline font-bold text-primary group-hover:text-blue-700 transition-colors">Macroeconomics.pdf</h4>
+                <p class="text-[11px] text-slate-400 mt-1">Uploaded Oct 12 • 4.2 MB</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+l>

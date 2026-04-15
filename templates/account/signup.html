@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}{{ T.signup_title|default:"Ro'yxatdan o'tish" }}{% endblock %}
+
+{% block content %}
+<div class="h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50/50">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Auth Card -->
+        <div class="bg-white rounded-[3rem] p-10 shadow-2xl border border-slate-100/50 backdrop-blur-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-secondary to-primary"></div>
+            
+            <div class="text-center mb-10">
+                <div class="inline-flex p-4 rounded-3xl bg-secondary/5 text-secondary mb-6">
+                    <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">person_add</span>
+                </div>
+                <h2 class="text-3xl font-headline font-black text-primary tracking-tight mb-2">
+                    A'zo bo'ling
+                </h2>
+                <p class="text-slate-500 font-medium">Mentoris bilan kelajagingizni quring</p>
+            </div>
+
+            <!-- Social Auth Section (TOP) -->
+            <div class="space-y-4 mb-10">
+                <a href="{% provider_login_url 'google' %}" class="w-full flex items-center justify-center gap-4 py-4 px-6 bg-white border-2 border-slate-100 rounded-[2rem] hover:border-secondary/30 hover:bg-slate-50 transition-all group relative">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-6 h-6 group-hover:scale-110 transition-transform" alt="Google">
+                    <span class="text-sm font-bold text-slate-700">Google orqali ro'yxatdan o'tish</span>
+                    <div class="absolute -top-3 right-4 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg">{{ T.fast_signup|default:"TEZKOR" }}</div>
+                </a>
+            </div>
+
+            <!-- Divider -->
+            <div class="relative mb-10">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-100"></div></div>
+                <div class="relative flex justify-center text-[10px] uppercase font-black text-slate-400">
+                    <span class="bg-white px-4 tracking-[0.3em]">Yoki</span>
+                </div>
+            </div>
+
+            <!-- Manual Auth Section -->
+            <form method="POST" action="{% url 'account_signup' %}" class="space-y-6">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">E-mail</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">mail</span>
+                            <input type="email" name="email" required class="w-full pl-12 pr-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-primary" placeholder="example@mail.com">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Parol</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">key</span>
+                            <input type="password" name="password1" id="id_password1" required class="w-full pl-12 pr-12 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-primary">
+                            <button type="button" onclick="togglePassword('id_password1', 'pass-icon1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-xl" id="pass-icon1">visibility</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Parolni tasdiqlang</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">verified_user</span>
+                            <input type="password" name="password2" id="id_password2" required class="w-full pl-12 pr-12 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-primary">
+                            <button type="button" onclick="togglePassword('id_password2', 'pass-icon2')" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-xl" id="pass-icon2">visibility</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full py-5 gradient-button bg-gradient-to-r from-secondary to-primary text-white rounded-[2rem] font-bold text-lg shadow-xl hover:opacity-90 transition-all active:scale-[0.98]">
+                        Ro'yxatdan o'tish
+                    </button>
+                    <p class="text-[10px] text-center text-slate-400 font-bold uppercase tracking-wider mt-4">
+                        Ro'yxatdan o'tish orqali siz barcha <a href="#" class="text-primary hover:underline">shartlarga</a> rozilik bildirasiz.
+                    </p>
+                </div>
+            </form>
+
+            <div class="mt-10 text-center border-t border-slate-50 pt-8">
+                <p class="text-sm font-medium text-slate-500">
+                    Hisobingiz bormi? 
+                    <a href="{% url 'account_login' %}" class="text-primary font-bold hover:underline ml-1">Kirish</a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Bottom Back Link -->
+        <div class="text-center">
+            <a href="/" class="inline-flex items-center gap-2 text-slate-400 hover:text-primary transition-colors font-bold text-sm">
+                <span class="material-symbols-outlined text-lg">arrow_back</span>
+                Bosh sahifaga qaytish
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ T.daily_assistant }}{% endblock %}
+
+{% block content %}
+<div class="h-full flex flex-col">
+    <section class="mb-12">
+      <span class="text-[10px] font-bold text-secondary uppercase tracking-[0.3em] mb-3 block">{{ T.daily_assistant }}</span>
+      <h2 class="text-5xl font-headline font-extrabold text-on-surface tracking-tight mb-4">{{ T.welcome_back }} {{ user.first_name|default:user.username }}. <br /><span class="text-primary/60 italic">{{ T.ready_master }}</span></h2>
+    </section>
+
+    <div class="grid grid-cols-12 gap-8 flex-1 overflow-hidden">
+      <div class="col-span-12 lg:col-span-7 space-y-8 overflow-y-auto pr-4">
+        <div class="bg-white rounded-[2rem] p-8 shadow-sm">
+          <div class="flex items-center justify-between mb-8">
+            <h3 class="text-xl font-headline font-bold text-on-surface flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary">calendar_today</span>
+              {{ T.today_path }}
+            </h3>
+            <button class="text-xs font-bold text-primary hover:underline font-label tracking-wide">{{ T.edit_schedule }}</button>
+          </div>
+          <div class="space-y-6 relative">
+            <div class="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-100"></div>
+            
+            <div class="relative pl-10">
+              <div class="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-primary border-4 border-white z-10"></div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-1">09:00 - 10:30</p>
+                  <h4 class="text-lg font-headline font-bold text-on-surface">Advanced Microeconomics</h4>
+                </div>
+                <span class="px-3 py-1 bg-blue-50 text-primary text-[10px] font-bold rounded-full">{{ T.lecture }}</span>
+              </div>
+            </div>
+
+            <div class="relative pl-10">
+              <div class="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-secondary border-4 border-white z-10"></div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-1">11:00 - 12:30</p>
+                  <h4 class="text-lg font-headline font-bold text-on-surface">Deep Focus: Thesis Drafting</h4>
+                </div>
+                <span class="px-3 py-1 bg-purple-50 text-secondary text-[10px] font-bold rounded-full">{{ T.study_block }}</span>
+              </div>
+            </div>
+
+            <div class="relative pl-10">
+              <div class="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-slate-300 border-4 border-white z-10"></div>
+              <div class="bg-slate-50 rounded-2xl p-5 mt-2">
+                <p class="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-4">{{ T.priority_tasks }}</p>
+                <ul class="space-y-3">
+                  <li class="flex items-center gap-3">
+                    <div class="w-5 h-5 border-2 border-primary/30 rounded cursor-pointer"></div>
+                    <span class="text-sm font-medium">Research Ethics Proposal</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-primary overflow-hidden rounded-[2rem] p-8 text-white relative">
+          <div class="relative z-10">
+            <span class="material-symbols-outlined text-4xl mb-4 opacity-50">format_quote</span>
+            <p class="text-2xl font-headline font-medium leading-relaxed italic">"{{ T.success_quote }}"</p>
+            <div class="mt-6 flex items-center gap-3">
+              <div class="w-10 h-[1px] bg-white/30"></div>
+              <span class="text-sm font-label uppercase tracking-widest opacity-70">{{ T.momentum_boost }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-span-12 lg:col-span-5 space-y-8">
+        <div class="bg-white rounded-[2rem] p-8 shadow-sm border-2 border-secondary/10">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+            <h3 class="text-lg font-headline font-bold text-on-surface">{{ T.ai_insights }}</h3>
+          </div>
+          <div class="space-y-6">
+            <div class="p-4 bg-blue-50/50 rounded-2xl">
+              <p class="text-slate-600 text-sm leading-relaxed">Mentor AI is analyzing your patterns...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] p-8 shadow-sm">
+          <h3 class="text-lg font-headline font-bold text-on-surface mb-6 flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">analytics</span>
+            {{ T.goal_velocity }}
+          </h3>
+          <div class="space-y-8">
+            <div>
+              <div class="flex justify-between items-end mb-2">
+                <p class="text-sm font-bold">CFA Level 1</p>
+                <p class="text-sm font-label text-primary">64%</p>
+              </div>
+              <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full" style="width: 64%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}

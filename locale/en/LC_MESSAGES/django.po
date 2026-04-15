@@ -1,0 +1,68 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mentoris\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-13 09:51+0000\n"
+"PO-Revision-Date: 2026-04-13 09:51+0000\n"
+"Last-Translator: Antigravity\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Mentor AI"
+msgstr "Mentor AI"
+
+msgid "Daily Assistant"
+msgstr "Daily Assistant"
+
+msgid "Knowledge Base"
+msgstr "Knowledge Base"
+
+msgid "Career Hub"
+msgstr "Career Hub"
+
+msgid "Gov Services"
+msgstr "Gov Services"
+
+msgid "Profile"
+msgstr "Profile"
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Logout"
+msgstr "Logout"
+
+msgid "New Chat"
+msgstr "New Chat"
+
+msgid "Chat History"
+msgstr "Chat History"
+
+msgid "Welcome back,"
+msgstr "Welcome back,"
+
+msgid "Personalized Guidance"
+msgstr "Personalized Guidance"
+
+msgid "Education & Grants"
+msgstr "Education & Grants"
+
+msgid "View"
+msgstr "View"
+
+msgid "Career Road"
+msgstr "Career Road"
+
+msgid "Explore"
+msgstr "Explore"
+
+msgid "Online"
+msgstr "Online"
+
+msgid "Ask Mentor AI..."
+msgstr "Ask Mentor AI..."
+
+msgid "Your discoveries and growth are the priority of the Mentoris platform."
+msgstr "Your discoveries and growth are the priority of the Mentoris platform."

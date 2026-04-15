@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{{ T.mentor_ai }} - Mentoris{% endblock %}
+
+{% block content %}
+<div class="h-full flex flex-col space-y-6">
+    <!-- Header Section -->
+    <section class="flex items-center justify-between">
+      <div class="space-y-1">
+        <span class="text-[10px] font-extrabold tracking-[0.2em] text-secondary uppercase animate-pulse">{{ T.personalized_guidance }}</span>
+        <h2 class="text-4xl font-headline font-extrabold text-primary tracking-tight">{{ T.welcome_back }} <span class="text-secondary italic">{{ user.first_name|default:user.username }}</span>.</h2>
+        <p class="text-slate-600 max-w-2xl text-lg leading-relaxed">{{ T.discoveries_text }}</p>
+      </div>
+      
+      <!-- History Toggle Button -->
+      <button onclick="toggleHistory()" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-primary shadow-sm hover:shadow-md transition-all active:scale-95">
+        <span class="material-symbols-outlined" id="history-icon" style="font-variation-settings: 'FILL' 1;">history</span>
+        <span id="history-text">{{ T.chat_history }}</span>
+      </button>
+    </section>
+
+    <!-- 3-Column Layout Container -->
+    <div class="grid grid-cols-12 gap-6 flex-1 overflow-hidden">
+      
+      <!-- Panel 1: Main Content (Dashboard Cards) - Left -->
+      <div id="content-panel" class="col-span-12 md:col-span-5 flex flex-col gap-6 overflow-y-auto pr-4 custom-scrollbar transition-all duration-300">
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Education Card -->
+            <div class="p-8 rounded-[2rem] bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                <div class="flex justify-between items-start mb-6">
+                  <div class="p-3 bg-blue-50 rounded-2xl group-hover:scale-110 transition-transform text-primary">
+                    <span class="material-symbols-outlined"> school</span>
+                  </div>
+                  <span class="px-3 py-1 bg-purple-50 text-secondary text-[10px] font-bold rounded-full uppercase">{{ T.match_98 }}</span>
+                </div>
+                <h3 class="text-xl font-headline font-bold text-primary mb-2">{{ T.edu_tab }}</h3>
+                <p class="text-sm text-slate-500 font-medium mb-6">{{ T.edu_desc }}</p>
+                <button class="w-full py-3 rounded-xl border border-slate-200 text-primary font-bold text-sm hover:bg-slate-50 transition-colors" onclick="location.href='{% url 'knowledge_base' %}'">{{ T.view }}</button>
+            </div>
+
+            <!-- Career Card -->
+            <div class="p-8 rounded-[2rem] bg-slate-50 border border-slate-100 group shadow-sm transition-all">
+                <div class="flex justify-between items-start mb-6">
+                  <div class="p-3 bg-white rounded-2xl group-hover:scale-110 transition-transform text-secondary">
+                    <span class="material-symbols-outlined">trending_up</span>
+                  </div>
+                  <span class="px-3 py-1 bg-white text-primary text-[10px] font-bold rounded-full uppercase">{{ T.new_path }}</span>
+                </div>
+                <h3 class="text-xl font-headline font-bold text-primary mb-2">{{ T.career_road }}</h3>
+                <p class="text-sm text-slate-500 font-medium mb-6">{{ T.career_desc }}</p>
+                <button class="w-full py-3 rounded-xl gradient-button text-white font-bold text-sm shadow-sm transition-all hover:opacity-95" onclick="location.href='{% url 'career_hub' %}'">{{ T.explore }}</button>
+            </div>
+
+            <!-- Pro Tip -->
+            <div class="p-6 rounded-[2rem] bg-blue-50 text-primary border border-blue-100 shadow-sm">
+                <h5 class="text-xs font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">lightbulb</span>
+                    {{ T.mentor_tip_title }}
+                </h5>
+                <p class="text-sm font-medium leading-relaxed italic">"{{ T.mentor_tip_text }}"</p>
+            </div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Mentor AI Chat (Central Focus) -->
+      <div id="chat-panel" class="col-span-12 md:col-span-4 flex flex-col h-full transition-all duration-300">
+        <div class="flex-1 rounded-[2.5rem] bg-white border border-slate-100 shadow-2xl overflow-hidden flex flex-col relative">
+          <div class="aura-thinking absolute top-0 left-0 w-full h-full pointer-events-none opacity-20"></div>
+          
+          <!-- Chat Header -->
+          <div class="p-6 border-b border-slate-50 bg-white relative z-10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-secondary">
+                    <span class="material-symbols-outlined">auto_awesome</span>
+                </div>
+                <div>
+                    <h4 class="font-headline font-bold text-primary leading-none">{{ T.mentor_ai }}</h4>
+                    <span class="text-[10px] text-emerald-500 font-bold flex items-center gap-1 mt-1">
+                        <span class="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span> {{ T.online }}
+                    </span>
+                </div>
+            </div>
+          </div>
+          
+          <!-- Chat Messages Area -->
+          <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-6 relative z-10 custom-scrollbar scroll-smooth"></div>
+
+          <!-- Chat Input Area -->
+          <div class="p-6 bg-white relative z-10 border-t border-slate-50">
+            <div class="relative">
+              <textarea id="message" onkeydown="handleKeyPress(event)" class="w-full bg-slate-50 border-none rounded-3xl p-4 pr-14 text-sm resize-none focus:ring-2 focus:ring-primary/20 transition-all font-medium" placeholder="{{ T.ask_mentor }}" rows="2"></textarea>
+              <button id="send-btn" onclick="sendMessage()" class="absolute bottom-3 right-3 w-10 h-10 gradient-button rounded-2xl text-white flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95">
+                <span class="material-symbols-outlined">send</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 3: Vertical History (Far Right) -->
+      <div id="history-panel" class="col-span-12 md:col-span-3 flex flex-col bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-sm transition-all duration-300 overflow-hidden">
+        <div class="flex items-center justify-between mb-8">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">history</span>
+                {{ T.chat_history }}
+            </h4>
+            <button onclick="createNewSession()" class="flex items-center justify-center w-10 h-10 bg-primary/5 text-primary rounded-xl hover:bg-primary hover:text-white transition-all group scale-95 hover:scale-100">
+                <span class="material-symbols-outlined text-xl">add</span>
+            </button>
+        </div>
+        
+        <!-- Sessions List -->
+        <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2">
+            {% for session in sessions %}
+            <div id="session-container-{{ session.id }}" class="relative group">
+                <button onclick="switchSession('{{ session.id }}')" 
+                        id="session-tab-{{ session.id }}"
+                        class="session-tab w-full text-left px-5 py-4 rounded-2xl border text-sm font-semibold transition-all group flex flex-col gap-1
+                        {% if session.id == active_session.id %}bg-primary text-white border-primary shadow-lg ring-4 ring-primary/10{% else %}bg-slate-50 text-slate-600 border-slate-50 hover:bg-white hover:border-slate-200{% endif %}">
+                    <span class="truncate block pr-6">{{ session.title }}</span>
+                    <span class="text-[9px] opacity-60 font-bold uppercase tracking-widest">{{ session.updated_at|date:"d M, H:i" }}</span>
+                </button>
+                <button onclick="confirmDelete('{{ session.id }}', event)" 
+                        class="absolute top-1/2 -translate-y-1/2 right-3 w-8 h-8 rounded-xl bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+      </div>
+
+    </div>
+</div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .scroll-hide::-webkit-scrollbar { display: none; }
+    .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let activeSessionId = "{{ active_session.id }}";
+let isHistoryVisible = true;
+const LANG_PREFIX = "/{{ request.LANGUAGE_CODE|default:'uz' }}";
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadSessionMessages(activeSessionId);
+});
+
+function toggleHistory() {
+    isHistoryVisible = !isHistoryVisible;
+    const historyPanel = document.getElementById('history-panel');
+    const contentPanel = document.getElementById('content-panel');
+    const chatPanel = document.getElementById('chat-panel');
+    const historyIcon = document.getElementById('history-icon');
+    
+    if (isHistoryVisible) {
+        historyPanel.classList.remove('hidden');
+        contentPanel.className = "col-span-12 md:col-span-5 flex flex-col gap-6 overflow-y-auto pr-4 custom-scrollbar transition-all duration-300";
+        chatPanel.className = "col-span-12 md:col-span-4 flex flex-col h-full transition-all duration-300";
+        historyIcon.innerText = 'history';
+    } else {
+        historyPanel.classList.add('hidden');
+        contentPanel.className = "col-span-12 md:col-span-7 flex flex-col gap-6 overflow-y-auto pr-4 custom-scrollbar transition-all duration-300";
+        chatPanel.className = "col-span-12 md:col-span-5 flex flex-col h-full transition-all duration-300";
+        historyIcon.innerText = 'history_off';
+    }
+}
+
+function handleKeyPress(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+async function loadSessionMessages(sessionId) {
+    if (!sessionId) return;
+    activeSessionId = sessionId;
+    const chat = document.getElementById("chat");
+    
+    document.querySelectorAll('.session-tab').forEach(tab => {
+        tab.classList.remove('bg-primary', 'text-white', 'border-primary', 'shadow-lg', 'ring-4', 'ring-primary/10');
+        tab.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-50');
+    });
+    const activeTab = document.getElementById(`session-tab-${sessionId}`);
+    if (activeTab) {
+        activeTab.classList.add('bg-primary', 'text-white', 'border-primary', 'shadow-lg', 'ring-4', 'ring-primary/10');
+        activeTab.classList.remove('bg-slate-50', 'text-slate-600', 'border-slate-50');
+    }
+
+    chat.innerHTML = `<div id="loading-spinner" class="flex items-center justify-center py-10 h-full">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>`;
+
+    try {
+        const response = await fetch(`${LANG_PREFIX}/api/session/${sessionId}/messages/`);
+        const data = await response.json();
+        chat.innerHTML = '';
+
+        if (data.messages && data.messages.length === 0) {
+            appendMessage('assistant', "{{ T.mentor_greeting|escapejs }}");
+        } else if (data.messages) {
+            data.messages.forEach(m => appendMessage(m.role, m.content));
+        }
+        scrollToBottom();
+    } catch (err) {
+        console.error("History loading error:", err);
+    }
+}
+
+async function createNewSession() {
+    try {
+        const response = await fetch(`${LANG_PREFIX}/api/session/create/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+        const data = await response.json();
+        location.reload();
+    } catch (err) {
+        console.error("Session creation error:", err);
+    }
+}
+
+async function confirmDelete(sessionId, event) {
+    event.stopPropagation();
+    if (confirm("{{ T.confirm_delete }}")) {
+        try {
+            const response = await fetch(`${LANG_PREFIX}/api/session/${sessionId}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (sessionId == activeSessionId) {
+                    location.reload();
+                } else {
+                    const container = document.getElementById(`session-container-${sessionId}`);
+                    if (container) container.remove();
+                }
+            }
+        } catch (err) {
+            console.error("Session deletion error:", err);
+        }
+    }
+}
+
+function appendMessage(role, content) {
+    const chat = document.getElementById("chat");
+    const isUser = role === 'user';
+    
+    const msgHtml = `
+    <div class="flex flex-col gap-2 ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[90%]">
+        <div class="${isUser ? 'gradient-button text-white shadow-md' : 'bg-slate-50 text-slate-700'} p-5 rounded-2xl ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} text-sm leading-relaxed shadow-sm transition-all animate-in fade-in slide-in-from-bottom-2">
+            ${content}
+        </div>
+    </div>`;
+    
+    chat.insertAdjacentHTML('beforeend', msgHtml);
+}
+
+async function sendMessage() {
+    const input = document.getElementById("message");
+    const sendBtn = document.getElementById("send-btn");
+
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    appendMessage('user', msg);
+    input.value = "";
+    scrollToBottom();
+    
+    sendBtn.disabled = true;
+    sendBtn.classList.add('opacity-50');
+
+    try {
+        const response = await fetch("{% url 'chat_api' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({
+                message: msg,
+                session_id: activeSessionId
+            })
+        });
+        const data = await response.json();
+        appendMessage('assistant', data.answer);
+        scrollToBottom();
+    } catch (err) {
+        console.error(err);
+        appendMessage('assistant', "{{ T.mentor_error|escapejs }}");
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.classList.remove('opacity-50');
+    }
+}
+
+function scrollToBottom() {
+    const chat = document.getElementById("chat");
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function switchSession(sessionId) {
+    loadSessionMessages(sessionId);
+}
+</script>
+{% endblock %}

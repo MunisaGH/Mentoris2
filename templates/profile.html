@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ T.profile_title }} - Mentoris{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-10 px-4">
+    <div class="mb-8">
+        <h1 class="text-4xl font-extrabold text-primary tracking-tight font-headline">{{ T.profile_title }}</h1>
+        <p class="text-slate-500 mt-2 text-lg">{{ T.profile_intro }}</p>
+    </div>
+
+    <div class="flex items-center gap-2 mb-10 bg-slate-100/50 p-2 rounded-[2rem] w-fit border border-slate-200/50">
+        <button onclick="switchTab('profile')" id="tab-btn-profile" class="px-8 py-3 rounded-[1.5rem] font-bold text-sm transition-all tab-btn active-tab bg-white text-primary shadow-sm border border-slate-200/50">
+            <span class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-xl">person</span>
+                {{ T.profile_info }}
+            </span>
+        </button>
+        <button onclick="switchTab('security')" id="tab-btn-security" class="px-8 py-3 rounded-[1.5rem] font-bold text-sm transition-all tab-btn text-slate-500 hover:text-primary">
+            <span class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-xl">security</span>
+                {{ T.security }}
+            </span>
+        </button>
+    </div>
+
+    <div id="profile-pane" class="tab-pane">
+        <form method="POST" class="space-y-10">
+            {% csrf_token %}
+
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100">
+                <div class="flex items-center gap-4 mb-8 border-b border-slate-50 pb-6">
+                    <div class="p-3 bg-blue-50 text-primary rounded-2xl">
+                        <span class="material-symbols-outlined text-3xl">badge</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">{{ T.personal_data }}</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">{{ T.first_name }}</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">{{ T.last_name }}</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">{{ T.phone }}</label>
+                        <input type="text" name="phone" value="{{ profile.phone_number|default:'' }}" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">{{ T.birth_date }}</label>
+                        <input type="date" name="birth_date" value="{{ profile.birth_date|date:'Y-m-d' }}" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100">
+                <div class="flex items-center gap-4 mb-8 border-b border-slate-50 pb-6">
+                    <div class="p-3 bg-purple-50 text-purple-600 rounded-2xl">
+                        <span class="material-symbols-outlined text-3xl">school</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">{{ T.academic_data }}</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">University</label>
+                        <input type="text" name="university" value="{{ profile.university|default:'' }}" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Major</label>
+                        <input type="text" name="major" value="{{ profile.major|default:'' }}" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100">
+                <div class="flex items-center gap-4 mb-8 border-b border-slate-50 pb-6">
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                        <span class="material-symbols-outlined text-3xl">psychology</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">{{ T.ai_personalized }}</h2>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Skills</label>
+                        <input type="text" name="skills" value="{{ skills_value }}" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-4 pb-20">
+                <button type="button" onclick="history.back()" class="px-8 py-4 text-slate-400 font-bold hover:bg-slate-50 rounded-2xl transition-all">{{ T.cancel }}</button>
+                <button type="submit" class="px-12 py-4 bg-primary text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:opacity-90 hover:-translate-y-1 transition-all active:scale-95">
+                    {{ T.save }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div id="security-pane" class="tab-pane hidden">
+        <div class="space-y-8">
+            <div class="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
+                    <span class="material-symbols-outlined text-[10rem]">verified_user</span>
+                </div>
+
+                <div class="flex items-center gap-4 mb-10">
+                    <div class="p-4 bg-emerald-50 text-emerald-500 rounded-3xl">
+                        <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">shield_check</span>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-800">{{ T.security_status }}</h2>
+                        <p class="text-emerald-600 font-bold text-sm flex items-center gap-1">
+                            <span class="material-symbols-outlined text-lg">check_circle</span>
+                            {{ T.security_protected }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                        <h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">key</span>
+                            {{ T.change_password_now }}
+                        </h4>
+                        <p class="text-xs text-slate-500 mb-6 leading-relaxed">{{ T.change_password_desc }}</p>
+                        <a href="{% url 'account_change_password' %}?next={{ request.path }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-primary font-bold rounded-2xl hover:border-primary transition-all shadow-sm">
+                            {{ T.change_password_now }}
+                            <span class="material-symbols-outlined text-lg">chevron_right</span>
+                        </a>
+                    </div>
+
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 opacity-60">
+                        <h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-secondary">security_update_good</span>
+                            {{ T.two_factor_title }}
+                        </h4>
+                        <p class="text-xs text-slate-500 mb-6 leading-relaxed">{{ T.two_factor_soon }}</p>
+                        <button disabled class="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 text-slate-400 font-bold rounded-2xl cursor-not-allowed">
+                            {{ T.waiting }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100">
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                    <span class="material-symbols-outlined text-slate-400">devices</span>
+                    {{ T.recent_logins }}
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-50">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <span class="material-symbols-outlined text-slate-500">laptop</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700">{{ T.current_device }}</p>
+                                <p class="text-[10px] text-slate-500 font-medium">{{ T.current_session }} • {{ T.current_location }}</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-600 text-[10px] font-black rounded-full uppercase">{{ T.online }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+        document.getElementById(tab + '-pane').classList.remove('hidden');
+
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('active-tab', 'bg-white', 'text-primary', 'shadow-sm', 'border', 'border-slate-200/50');
+            b.classList.add('text-slate-500');
+        });
+        const activeBtn = document.getElementById('tab-btn-' + tab);
+        activeBtn.classList.add('active-tab', 'bg-white', 'text-primary', 'shadow-sm', 'border', 'border-slate-200/50');
+        activeBtn.classList.remove('text-slate-500');
+
+        history.replaceState(null, null, '#' + tab);
+    }
+
+    window.addEventListener('load', () => {
+        if (window.location.hash === '#security') {
+            switchTab('security');
+        } else {
+            switchTab('profile');
+        }
+    });
+
+    window.addEventListener('hashchange', () => {
+        if (window.location.hash === '#security') {
+            switchTab('security');
+        } else {
+            switchTab('profile');
+        }
+    });
+</script>
+{% endblock %}
