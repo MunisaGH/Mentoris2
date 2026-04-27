@@ -1,7 +1,22 @@
-.env
-.venv/
-db.sqlite3
+# Python
 __pycache__/
 *.py[cod]
-*.sqlite3
+*$py.class
+venv/
+.env
 
+# Database
+db.sqlite3
+
+# Media & Static
+media/
+static_root/
+
+# IDE
+.vscode/
+.idea/
+
+# Other Projects (DO NOT PUSH)
+Career AI/
+Career AI
+旋
