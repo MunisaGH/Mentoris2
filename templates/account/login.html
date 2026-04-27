@@ -61,18 +61,15 @@
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">key</span>
                         <input type="password" name="password" id="id_password" required class="w-full pl-12 pr-12 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-primary">
-                        <button type="button" onclick="togglePassword('id_password', 'pass-icon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
-                            <span class="material-symbols-outlined text-xl" id="pass-icon">visibility</span>
-                        </button>
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-5 gradient-button text-white rounded-[2rem] font-bold text-lg shadow-xl hover:shadow-primary/20 transition-all active:scale-[0.98]">
+                <button type="submit" class="w-full py-5 bg-primary text-white rounded-[2rem] font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all active:scale-[0.98]">
                     Kirish
                 </button>
             </form>
 
-            <div class="mt-10 text-center">
+            <div class="mt-8 text-center pt-6 border-t border-slate-50">
                 <p class="text-sm font-medium text-slate-500">
                     Hisobingiz yo'qmi? 
                     <a href="{% url 'account_signup' %}" class="text-secondary font-bold hover:underline ml-1">Ro'yxatdan o'tish</a>

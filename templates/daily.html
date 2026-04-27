@@ -1,107 +1,231 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ T.daily_assistant }}{% endblock %}
+{% block title %}Kunlik Yordamchi{% endblock %}
 
 {% block content %}
-<div class="h-full flex flex-col">
-    <section class="mb-12">
-      <span class="text-[10px] font-bold text-secondary uppercase tracking-[0.3em] mb-3 block">{{ T.daily_assistant }}</span>
-      <h2 class="text-5xl font-headline font-extrabold text-on-surface tracking-tight mb-4">{{ T.welcome_back }} {{ user.first_name|default:user.username }}. <br /><span class="text-primary/60 italic">{{ T.ready_master }}</span></h2>
-    </section>
-
-    <div class="grid grid-cols-12 gap-8 flex-1 overflow-hidden">
-      <div class="col-span-12 lg:col-span-7 space-y-8 overflow-y-auto pr-4">
-        <div class="bg-white rounded-[2rem] p-8 shadow-sm">
-          <div class="flex items-center justify-between mb-8">
-            <h3 class="text-xl font-headline font-bold text-on-surface flex items-center gap-3">
-              <span class="material-symbols-outlined text-primary">calendar_today</span>
-              {{ T.today_path }}
-            </h3>
-            <button class="text-xs font-bold text-primary hover:underline font-label tracking-wide">{{ T.edit_schedule }}</button>
-          </div>
-          <div class="space-y-6 relative">
-            <div class="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-100"></div>
-            
-            <div class="relative pl-10">
-              <div class="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-primary border-4 border-white z-10"></div>
-              <div class="flex justify-between items-start">
-                <div>
-                  <p class="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-1">09:00 - 10:30</p>
-                  <h4 class="text-lg font-headline font-bold text-on-surface">Advanced Microeconomics</h4>
-                </div>
-                <span class="px-3 py-1 bg-blue-50 text-primary text-[10px] font-bold rounded-full">{{ T.lecture }}</span>
-              </div>
-            </div>
-
-            <div class="relative pl-10">
-              <div class="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-secondary border-4 border-white z-10"></div>
-              <div class="flex justify-between items-start">
-                <div>
-                  <p class="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-1">11:00 - 12:30</p>
-                  <h4 class="text-lg font-headline font-bold text-on-surface">Deep Focus: Thesis Drafting</h4>
-                </div>
-                <span class="px-3 py-1 bg-purple-50 text-secondary text-[10px] font-bold rounded-full">{{ T.study_block }}</span>
-              </div>
-            </div>
-
-            <div class="relative pl-10">
-              <div class="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-slate-300 border-4 border-white z-10"></div>
-              <div class="bg-slate-50 rounded-2xl p-5 mt-2">
-                <p class="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-4">{{ T.priority_tasks }}</p>
-                <ul class="space-y-3">
-                  <li class="flex items-center gap-3">
-                    <div class="w-5 h-5 border-2 border-primary/30 rounded cursor-pointer"></div>
-                    <span class="text-sm font-medium">Research Ethics Proposal</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
+<div class="h-full flex flex-col p-8">
+    <!-- Header Area -->
+    <div class="flex justify-between items-end mb-12">
+        <div>
+            <p class="text-[11px] font-black text-primary/50 uppercase tracking-[0.3em] mb-3">Kunlik Yordamchi</p>
+            <h1 class="text-6xl font-headline font-black text-slate-900 tracking-tight leading-[1.1]">
+                Salom, {{ user.first_name }}.<br/>
+                <span class="text-slate-300">Bugungi bilimlar zaxirasi qanday?</span>
+            </h1>
         </div>
         
-        <div class="bg-primary overflow-hidden rounded-[2rem] p-8 text-white relative">
-          <div class="relative z-10">
-            <span class="material-symbols-outlined text-4xl mb-4 opacity-50">format_quote</span>
-            <p class="text-2xl font-headline font-medium leading-relaxed italic">"{{ T.success_quote }}"</p>
-            <div class="mt-6 flex items-center gap-3">
-              <div class="w-10 h-[1px] bg-white/30"></div>
-              <span class="text-sm font-label uppercase tracking-widest opacity-70">{{ T.momentum_boost }}</span>
+        <div class="flex items-center gap-6">
+            <!-- Energy Score -->
+            <div class="bg-white px-8 py-4 rounded-[2rem] shadow-xl border border-slate-50 text-center relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Energy Bar</p>
+                    <div class="text-3xl font-black text-emerald-500" id="energy-val">{{ user.profile.energy_score }}%</div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 bg-emerald-500 transition-all duration-1000" id="energy-bar" style="width: {{ user.profile.energy_score }}%"></div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="col-span-12 lg:col-span-5 space-y-8">
-        <div class="bg-white rounded-[2rem] p-8 shadow-sm border-2 border-secondary/10">
-          <div class="flex items-center gap-3 mb-6">
-            <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-            <h3 class="text-lg font-headline font-bold text-on-surface">{{ T.ai_insights }}</h3>
-          </div>
-          <div class="space-y-6">
-            <div class="p-4 bg-blue-50/50 rounded-2xl">
-              <p class="text-slate-600 text-sm leading-relaxed">Mentor AI is analyzing your patterns...</p>
+            <button onclick="generateAIPlan()" id="plan-btn" class="flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+                <span class="material-symbols-outlined">auto_awesome</span>
+                YANGI REJA TUZISH
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="grid grid-cols-12 gap-10">
+        <!-- Main Timeline -->
+        <div class="col-span-12 lg:col-span-7 space-y-8">
+            <div class="bg-white rounded-[3rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-100">
+                <div class="flex justify-between items-center mb-10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-3xl">task_alt</span>
+                        </div>
+                        <h2 class="text-2xl font-headline font-bold text-slate-800">Bugungi vazifalar</h2>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div class="space-y-8 relative before:absolute before:left-[21px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-50">
+                    {% if user.profile.daily_plan_json.tasks %}
+                        {% for task in user.profile.daily_plan_json.tasks %}
+                        <div class="relative pl-14 group flex items-center justify-between">
+                            <!-- Checkbox/Indicator -->
+                            <div class="absolute left-0 top-1/2 -translate-y-1/2 z-10">
+                                <button onclick="toggleTask({{ task.id }})" id="task-check-{{ task.id }}" 
+                                    class="w-11 h-11 rounded-2xl border-2 transition-all flex items-center justify-center 
+                                    {% if task.status == 'done' %}bg-emerald-500 border-emerald-500 text-white{% else %}bg-white border-slate-200 text-transparent hover:border-primary{% endif %}">
+                                    <span class="material-symbols-outlined text-xl">check</span>
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1">
+                                <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">{{ task.time }}</p>
+                                <h4 class="text-lg font-headline font-bold {% if task.status == 'done' %}text-slate-300 line-through{% else %}text-slate-800{% endif %}" id="task-title-{{ task.id }}">
+                                    {{ task.task }}
+                                </h4>
+                            </div>
+
+                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
+                                {% if task.type == 'study' %}bg-blue-50 text-primary
+                                {% elif task.type == 'rest' %}bg-purple-50 text-secondary
+                                {% else %}bg-emerald-50 text-emerald-600{% endif %}">
+                                {{ task.type }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-20">
+                            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span class="material-symbols-outlined text-4xl text-slate-300">auto_awesome_motion</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-400">Reja tuzilmagan</h3>
+                            <button onclick="generateAIPlan()" class="text-primary font-black text-xs uppercase tracking-widest mt-4 underline">Hozir tuzish</button>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-          </div>
+
+            <!-- Evening Test Promotion -->
+            <div class="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+                <div class="relative z-10 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-headline font-black mb-2">Bilimni Muhrlash Testi</h3>
+                        <p class="text-slate-400 text-sm max-w-md">Kechqurun barcha o'tilgan mavzular bo'yicha yakuniy test topshiriladi. Bu kunlik bilimni xotirada qat'iy saqlashga yordam beradi.</p>
+                    </div>
+                    <button class="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:bg-primary hover:text-white transition-all shadow-xl">
+                        TESTNI BOSHLASH
+                    </button>
+                </div>
+                <span class="material-symbols-outlined absolute -right-8 -bottom-8 text-[12rem] opacity-5">quiz</span>
+            </div>
         </div>
 
-        <div class="bg-white rounded-[2rem] p-8 shadow-sm">
-          <h3 class="text-lg font-headline font-bold text-on-surface mb-6 flex items-center gap-3">
-            <span class="material-symbols-outlined text-primary">analytics</span>
-            {{ T.goal_velocity }}
-          </h3>
-          <div class="space-y-8">
-            <div>
-              <div class="flex justify-between items-end mb-2">
-                <p class="text-sm font-bold">CFA Level 1</p>
-                <p class="text-sm font-label text-primary">64%</p>
-              </div>
-              <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-primary rounded-full" style="width: 64%"></div>
-              </div>
+        <!-- Role-Specific Sidebar Info -->
+        <div class="col-span-12 lg:col-span-5 space-y-8">
+            <!-- Karzinka (Backlog) -->
+            <div class="bg-white rounded-[3rem] p-10 shadow-xl border border-red-50 relative overflow-hidden">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl">shopping_basket</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-headline font-black text-slate-800">Qarzlar Savatchasi</h3>
+                        <p class="text-[10px] text-red-400 font-bold uppercase">Bajarilmagan vazifalar</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    {% if user.profile.task_backlog_json %}
+                        <div class="space-y-3">
+                            {% for item in user.profile.task_backlog_json|slice:":5" %}
+                            <div class="flex items-center justify-between p-3 bg-red-50/50 rounded-2xl border border-red-100/50">
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-red-400 text-sm">history</span>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-700">{{ item.task }}</p>
+                                        <p class="text-[9px] text-slate-400 uppercase">{{ item.missed_at }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if user.profile.task_backlog_json|length > 5 %}
+                                <p class="text-[9px] text-center text-slate-400 font-bold uppercase mt-2">+ yana {{ user.profile.task_backlog_json|length|add:"-5" }} ta qarz</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-slate-400 leading-relaxed italic">
+                            "Ertaga qolgan dars — o'g'irlangan kelajakdir." Savatchada qarzlar qolmasligiga harakat qiling.
+                        </p>
+                        <div class="pt-4 border-t border-slate-50">
+                            <p class="text-[10px] font-black text-slate-300 uppercase text-center tracking-[0.2em]">Savatcha hozircha bo'sh</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-          </div>
+
+            <!-- Knowledge Precision -->
+            <div class="bg-gradient-to-br from-primary to-blue-900 rounded-[3rem] p-10 text-white relative overflow-hidden">
+                <h4 class="text-xl font-black mb-4">Bilim Aniqligi</h4>
+                <div class="text-5xl font-black mb-2">0.0%</div>
+                <p class="text-xs text-blue-200 leading-relaxed">Sizning testlardagi aniqlik darajangiz va yuzaki ishlashga qarshi ko'rsatkichingiz.</p>
+                <span class="material-symbols-outlined absolute -right-6 -bottom-6 text-[10rem] opacity-10">verified</span>
+            </div>
         </div>
-      </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function toggleTask(taskId) {
+        const checkBtn = document.getElementById(`task-check-${taskId}`);
+        const title = document.getElementById(`task-title-${taskId}`);
+        
+        try {
+            const response = await fetch(`/api/toggle-task/${taskId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                // UI Update
+                if (data.status === 'done') {
+                    checkBtn.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+                    checkBtn.classList.remove('bg-white', 'border-slate-200', 'text-transparent');
+                    title.classList.add('text-slate-300', 'line-through');
+                    title.classList.remove('text-slate-800');
+                } else {
+                    checkBtn.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
+                    checkBtn.classList.add('bg-white', 'border-slate-200', 'text-transparent');
+                    title.classList.remove('text-slate-300', 'line-through');
+                    title.classList.add('text-slate-800');
+                }
+                
+                // Energy Update
+                document.getElementById('energy-val').innerText = `${data.energy}%`;
+                document.getElementById('energy-bar').style.width = `${data.energy}%`;
+            }
+        } catch (e) {
+            console.error("Toggle error:", e);
+        }
+    }
+
+    async function generateAIPlan() {
+        const btn = document.getElementById('plan-btn');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'TUZILMOQDA...';
+        
+        try {
+            const response = await fetch('/api/generate-plan/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+            const data = await response.json();
+            if (data.success) location.reload();
+        } catch (e) {
+            alert("Aloqa xatosi.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 {% endblock %}

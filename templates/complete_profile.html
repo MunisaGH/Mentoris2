@@ -1,61 +1,117 @@
 {% extends 'base.html' %}
 
-{% block title %}Profilni to'ldirish{% endblock %}
+{% block title %}Xush kelibsiz - Mentoris{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto py-10">
-    <div class="bg-white rounded-[2rem] p-10 shadow-xl border border-slate-100">
-        <div class="text-center mb-10">
-            <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center text-primary mx-auto mb-4 shadow-inner">
-                <span class="material-symbols-outlined text-4xl">person_add</span>
-            </div>
-            <h2 class="text-3xl font-extrabold text-primary tracking-tight">Profilni yakunlash</h2>
-            <p class="text-slate-500 mt-2">Mentor AI sizga aniqroq maslahat berishi uchun asosiy ma'lumotlarni kiriting.</p>
-        </div>
+<div class="max-w-4xl mx-auto py-12 px-4">
+    {% if not profile.role_selected %}
+    <!-- ══════════════════ ROLE SELECTION ══════════════════ -->
+    <div class="text-center mb-16">
+        <h1 class="text-5xl font-headline font-extrabold text-primary tracking-tight mb-4">Xush kelibsiz!</h1>
+        <p class="text-slate-500 text-lg max-w-xl mx-auto">Mentoris platformasini sizga moslashtirishimiz uchun kimligingizni tanlang.</p>
+    </div>
 
-        <form method="POST" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Applicant Card -->
+        <form method="POST" class="group">
             {% csrf_token %}
-            <div class="grid grid-cols-2 gap-6">
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Ism</label>
-                    <input type="text" name="first_name" required value="{{ user.first_name }}"
-                        class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-slate-700" 
-                        placeholder="Masalan: Abdulla">
+            <input type="hidden" name="user_role" value="applicant">
+            <button type="submit" class="w-full text-left bg-white rounded-[2.5rem] p-10 shadow-xl border-2 border-transparent hover:border-primary transition-all duration-300 hover:-translate-y-2 flex flex-col items-center">
+                <div class="w-24 h-24 rounded-3xl bg-blue-50 text-primary flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
+                    <span class="material-symbols-outlined text-5xl">school</span>
                 </div>
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Familiya</label>
-                    <input type="text" name="last_name" required value="{{ user.last_name }}"
-                        class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-slate-700" 
-                        placeholder="Masalan: Qodiriy">
+                <h3 class="text-2xl font-headline font-black text-primary mb-4 text-center">Abituriyent</h3>
+                <p class="text-slate-500 text-center text-sm leading-relaxed mb-8">
+                    OTMga tayyorgarlik, testlar tahlili va universitet tanlashda aqlli yordamchi.
+                </p>
+                <div class="mt-auto px-6 py-3 bg-slate-50 rounded-full text-xs font-black text-primary uppercase tracking-widest group-hover:bg-primary group-hover:text-white transition-colors">
+                    Tanlash
                 </div>
-            </div>
+            </button>
+        </form>
 
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Telefon raqam</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">call</span>
-                    <input type="text" name="phone" required value="{{ profile.phone_number|default:'' }}"
-                        class="w-full pl-12 pr-5 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-slate-700" 
-                        placeholder="+998 90 123 45 67">
+        <!-- Student Card -->
+        <form method="POST" class="group">
+            {% csrf_token %}
+            <input type="hidden" name="user_role" value="student">
+            <button type="submit" class="w-full text-left bg-white rounded-[2.5rem] p-10 shadow-xl border-2 border-transparent hover:border-secondary transition-all duration-300 hover:-translate-y-2 flex flex-col items-center">
+                <div class="w-24 h-24 rounded-3xl bg-purple-50 text-secondary flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
+                    <span class="material-symbols-outlined text-5xl">auto_stories</span>
                 </div>
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Tug'ilgan sana</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">calendar_today</span>
-                    <input type="date" name="birth_date" required value="{{ profile.birth_date|date:'Y-m-d' }}"
-                        class="w-full pl-12 pr-5 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-slate-700">
+                <h3 class="text-2xl font-headline font-black text-secondary mb-4 text-center">Talaba</h3>
+                <p class="text-slate-500 text-center text-sm leading-relaxed mb-8">
+                    Akademik muvaffaqiyat, ilmiy ishlar tahlili va karyera boshlash uchun mentor.
+                </p>
+                <div class="mt-auto px-6 py-3 bg-slate-50 rounded-full text-xs font-black text-secondary uppercase tracking-widest group-hover:bg-secondary group-hover:text-white transition-colors">
+                    Tanlash
                 </div>
-            </div>
-
-            <div class="pt-6">
-                <button type="submit" class="w-full py-4 bg-primary text-white rounded-2xl font-bold text-lg shadow-lg hover:opacity-90 transition-all transform hover:scale-[1.01]">
-                    Saqlash va Davom Etish
-                </button>
-                <p class="text-[10px] text-center text-slate-400 mt-4 uppercase font-bold tracking-widest">Ma'lumotlaringiz xavfsiz saqlanadi</p>
-            </div>
+            </button>
         </form>
     </div>
+
+    {% else %}
+    <!-- ══════════════════ DATA COMPLETION ══════════════════ -->
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-[3rem] p-10 shadow-2xl border border-slate-100">
+            <div class="text-center mb-10">
+                <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center text-primary mx-auto mb-6 shadow-inner">
+                    <span class="material-symbols-outlined text-4xl">inventory_2</span>
+                </div>
+                <h2 class="text-3xl font-extrabold text-primary tracking-tight">Ma'lumotlarni yakunlash</h2>
+                <p class="text-slate-500 mt-2">Siz <strong>{{ profile.get_user_role_display }}</strong> sifatida ro'yxatdan o'tdingiz.</p>
+            </div>
+
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Ism</label>
+                        <input type="text" name="first_name" required value="{{ user.first_name }}"
+                            class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Familiya</label>
+                        <input type="text" name="last_name" required value="{{ user.last_name }}"
+                            class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Telefon raqam</label>
+                    <input type="text" name="phone" required value="{{ profile.phone_number|default:'' }}"
+                        class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700" 
+                        placeholder="+998 90 123 45 67">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Tug'ilgan sana</label>
+                    <input type="date" name="birth_date" value="{{ profile.birth_date|date:'Y-m-d' }}"
+                        class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-slate-700">
+                </div>
+
+                <div class="pt-8">
+                    <button type="submit" class="w-full py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl shadow-primary/20 hover:opacity-90 transition-all transform hover:-translate-y-1 active:scale-95 leading-none">
+                        Mentorisga Kirish
+                    </button>
+                    <div class="mt-6 flex items-center justify-center gap-2">
+                        <span class="w-1.5 h-1.5 bg-primary rounded-full"></span>
+                        <span class="w-1.5 h-1.5 bg-slate-200 rounded-full"></span>
+                        <span class="w-1.5 h-1.5 bg-slate-200 rounded-full"></span>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <a href="{% url 'complete_profile' %}" onclick="resetRole()" class="text-xs font-bold text-slate-400 hover:text-primary uppercase tracking-widest transition-colors">Rolni qayta tanlash</a>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+    function resetRole() {
+        // Logic to clear role if user wants to change it during onboarding
+    }
+</script>
 {% endblock %}

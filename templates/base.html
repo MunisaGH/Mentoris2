@@ -118,6 +118,21 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-background text-on-surface font-body overflow-hidden">
+    {% if is_guest %}
+    <div class="fixed top-0 left-0 w-full z-[500] bg-primary text-white py-2.5 px-8 flex items-center justify-between shadow-2xl backdrop-blur-md bg-primary/90">
+        <div class="flex items-center gap-4">
+            <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                <span class="material-symbols-outlined text-sm">explore</span>
+            </div>
+            <p class="text-[10px] font-black uppercase tracking-[0.2em]">Siz mehmon rejimidasiz. To'liq imkoniyatlar uchun ro'yxatdan o'ting!</p>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="{% url 'account_login' %}" class="text-[10px] font-black uppercase hover:text-white/70 transition-colors">Kirish</a>
+            <a href="{% url 'account_signup' %}" class="bg-white text-primary px-6 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg hover:scale-105 transition-all">Boshlash</a>
+        </div>
+    </div>
+    <style>body { padding-top: 44px; }</style>
+    {% endif %}
 <div class="flex h-screen w-full">
 
     <!-- ══════════════════ SIDEBAR ══════════════════ -->
@@ -142,33 +157,40 @@
 
         <!-- Nav Links -->
         <nav class="flex-1 flex flex-col gap-1">
-            <a href="{% url 'mentor_ai' %}"
-                class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
-                {% if request.resolver_match.url_name == 'mentor_ai' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'mentor_ai' %}style="font-variation-settings:'FILL' 1"{% endif %}>psychology</span>
-                {{ T.mentor_ai }}
-            </a>
-
-            <a href="{% url 'dashboard' %}"
-                class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
+            <button onclick="window.location.href='{% url 'dashboard' %}'"
+                class="flex items-center gap-3 p-3 w-full text-sm font-medium rounded-xl transition-all
                 {% if request.resolver_match.url_name == 'dashboard' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
                 <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'dashboard' %}style="font-variation-settings:'FILL' 1"{% endif %}>today</span>
-                {{ T.daily_assistant }}
-            </a>
+                {% if user.profile.user_role == 'applicant' %}Tayyorgarlik Rejasi{% else %}Akademik Reja{% endif %}
+            </button>
 
             <a href="{% url 'knowledge_base' %}"
                 class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
                 {% if request.resolver_match.url_name == 'knowledge_base' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'knowledge_base' %}style="font-variation-settings:'FILL' 1"{% endif %}>database</span>
-                {{ T.knowledge_base }}
+                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'knowledge_base' %}style="font-variation-settings:'FILL' 1"{% endif %}>
+                    {% if user.profile.user_role == 'applicant' %}history_edu{% else %}library_books{% endif %}
+                </span>
+                {% if user.profile.user_role == 'applicant' %}DTM Testlari{% else %}Ilmiy Kutubxona{% endif %}
             </a>
 
             <a href="{% url 'career_hub' %}"
                 class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
                 {% if request.resolver_match.url_name == 'career_hub' %}bg-white text-primary shadow-sm font-bold{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
-                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'career_hub' %}style="font-variation-settings:'FILL' 1"{% endif %}>work</span>
-                {{ T.career_hub }}
+                <span class="material-symbols-outlined" {% if request.resolver_match.url_name == 'career_hub' %}style="font-variation-settings:'FILL' 1"{% endif %}>
+                    {% if user.profile.user_role == 'applicant' %}account_balance{% else %}work{% endif %}
+                </span>
+                {% if user.profile.user_role == 'applicant' %}OTMlar Markazi{% else %}Karyera Markazi{% endif %}
             </a>
+
+            {% if request.user.is_staff %}
+            <div class="my-4 border-t border-slate-200"></div>
+            <a href="{% url 'admin_dashboard' %}"
+                class="flex items-center gap-3 p-3 text-sm font-black rounded-xl transition-all
+                {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-white text-primary shadow-sm font-bold{% else %}text-primary bg-primary/5 hover:bg-primary/10{% endif %}">
+                <span class="material-symbols-outlined">admin_panel_settings</span>
+                ADMIN PANEL
+            </a>
+            {% endif %}
 
             <a href="{% url 'gov_services' %}"
                 class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all
@@ -198,16 +220,16 @@
     <!-- ══════════════════ MAIN ══════════════════ -->
     <main class="flex-1 flex flex-col overflow-hidden">
         <!-- Header -->
-        <header class="flex justify-between items-center w-full px-10 py-4 bg-[#f7f9fe] sticky top-0 z-10 border-b border-slate-100/50">
-            <div class="flex items-center flex-1 max-w-xl">
-                <div class="relative w-full">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
-                    <input class="w-full pl-12 pr-4 py-2.5 bg-white border-none rounded-full text-sm focus:ring-2 focus:ring-primary/20 transition-all shadow-sm" placeholder="{{ T.search_placeholder }}" type="text"/>
+        <header class="bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-100 flex items-center justify-between px-10 py-5">
+            <div class="flex items-center gap-4 flex-1">
+                <div class="relative w-full max-w-md group">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                    <input type="text" placeholder="{{ T.search_placeholder }}" 
+                        class="w-full pl-12 pr-4 py-3 bg-slate-100/50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 transition-all">
                 </div>
             </div>
 
             <div class="flex items-center gap-6">
-                <!-- Language -->
                 <form action="{% url 'set_language' %}" method="post" class="flex gap-3 text-slate-400 border-r pr-6 border-slate-200">
                     {% csrf_token %}
                     <input name="next" type="hidden" value="{{ request.path }}">
@@ -595,5 +617,35 @@
 </script>
 
 {% block extra_js %}{% endblock %}
+    {% if is_guest %}
+    <script>
+        function checkGuest(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            alert("Siz ro'yxatdan o'tmadingiz. Ushbu funksiyani ishlatish uchun iltimos tizimga kiring.");
+            window.location.href = "{% url 'account_login' %}";
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mentor panel tugmalari
+            const lockedElements = [
+                '#mentor-fab',
+                'button[onclick="openMentorPanel();"]',
+                'a[href*="profile/"]',
+                '#upload-btn'
+            ];
+            
+            lockedElements.forEach(selector => {
+                const el = document.querySelector(selector);
+                if (el) {
+                    el.removeAttribute('onclick');
+                    el.addEventListener('click', checkGuest, true);
+                    el.style.opacity = '0.6';
+                    el.title = "Ro'yxatdan o'tish shart";
+                }
+            });
+        });
+    </script>
+    {% endif %}
 </body>
 </html>

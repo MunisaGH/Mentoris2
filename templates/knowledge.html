@@ -4,68 +4,260 @@
 
 {% block content %}
 <div class="px-10 pb-12 space-y-10">
-    <section class="mt-8">
-        <h2 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Knowledge Base</h2>
-        <p class="text-slate-500 mt-2 max-w-2xl">Manage your academic ecosystem. Let the Mentor AI curate your research papers and lectures[cite: 3, 59].</p>
-    </section>
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        <div class="lg:col-span-5 bg-white rounded-3xl p-8 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 hover:border-primary/40 transition-all group cursor-pointer">
-            <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
+    {% if user.profile.user_role == 'applicant' %}
+    <!-- APPLICANT: Subject Progress Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for p in progress %}
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 hover:shadow-xl transition-all group">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                    <span class="material-symbols-outlined">{{ p.subject.icon }}</span>
+                </div>
+                <div>
+                    <h4 class="font-black text-slate-800">{{ p.subject.name }}</h4>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ p.completed_lessons_count }} dars tugallandi</p>
+                </div>
             </div>
-            <h3 class="font-headline font-bold text-lg">Upload Documents</h3>
-            <p class="text-sm text-slate-400 text-center mt-2 px-6">Drag and drop your PDFs, Word files, or notes to begin AI indexing[cite: 42, 52].</p>
-            <button class="mt-6 px-6 py-2.5 rounded-full border border-slate-200 text-sm font-semibold text-primary hover:bg-slate-50 transition-colors">Browse Files</button>
+            <div class="space-y-2">
+                <div class="flex justify-between text-xs font-bold">
+                    <span class="text-slate-400">Bilim darajasi</span>
+                    <span class="text-primary">{{ p.knowledge_percentage }}%</span>
+                </div>
+                <div class="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full transition-all duration-1000" style="width: {{ p.knowledge_percentage }}%"></div>
+                </div>
+            </div>
+            <button class="w-full mt-6 py-3 bg-slate-50 hover:bg-primary hover:text-white text-primary text-xs font-black rounded-xl transition-all">DARSLARNI BOSHLASH</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- STUDENT: Research & Resources Hub -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl flex flex-col justify-between">
+            <div>
+                <span class="material-symbols-outlined text-4xl text-blue-400 mb-4">description</span>
+                <h4 class="text-xl font-headline font-black mb-2">Ilmiy Maqolalar</h4>
+                <p class="text-xs text-slate-400">RAG texnologiyasi yordamida yuklangan maqolalarni tahlil qilish.</p>
+            </div>
+            <p class="text-[10px] font-bold text-blue-400 mt-6 uppercase tracking-widest">{{ user_documents.count }} ta hujjat yuklandi</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:border-primary transition-all">
+            <span class="material-symbols-outlined text-4xl text-primary mb-4">summarize</span>
+            <h4 class="text-xl font-headline font-black text-slate-800 mb-2">Ma'ruzalar (Notes)</h4>
+            <p class="text-xs text-slate-400">Barcha dars konspektlaringiz va leksiya matnlari.</p>
+            <button class="mt-6 text-xs font-black text-primary uppercase tracking-widest">Barchasini ko'rish</button>
         </div>
 
-        <div class="lg:col-span-7 bg-white rounded-3xl shadow-sm flex flex-col border border-slate-100">
-            <div class="px-8 py-5 border-b border-slate-50 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-                    <h3 class="font-headline font-bold text-base text-primary">AI Document Assistant</h3>
-                </div>
-                <span class="text-[10px] font-bold text-secondary uppercase bg-purple-50 px-2 py-1 rounded">RAG Enabled</span>
-            </div>
-            <div class="flex-1 p-8 space-y-6">
-                <div class="flex gap-4">
-                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-slate-500 text-sm">smart_toy</span>
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded-2xl rounded-tl-none text-sm text-slate-600">
-                        Hello Alex! I've analyzed your recent documents. Ask me to summarize any file or find connections between lectures[cite: 55, 58].
-                    </div>
-                </div>
-            </div>
-            <div class="p-4 bg-slate-50 m-4 rounded-2xl flex items-center gap-3 border border-slate-100">
-                <input class="bg-transparent border-none focus:ring-0 text-sm flex-1 placeholder:text-slate-400 px-2" placeholder="Ask about your documents..." type="text"/>
-                <button class="w-10 h-10 gradient-button rounded-xl text-white flex items-center justify-center shadow-md">
-                    <span class="material-symbols-outlined text-sm">send</span>
-                </button>
+        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <span class="material-symbols-outlined text-4xl text-secondary mb-4">folder_shared</span>
+            <h4 class="text-xl font-headline font-black text-slate-800 mb-2">Kurs ishlari</h4>
+            <p class="text-xs text-slate-400">Loyiha va kurs ishlarini boshqarish.</p>
+            <div class="h-1.5 w-full bg-slate-50 rounded-full mt-6 overflow-hidden">
+                <div class="h-full bg-secondary" style="width: 45%"></div>
             </div>
         </div>
     </div>
+    {% endif %}
 
-    <div class="space-y-6">
-        <div class="flex items-center gap-3 overflow-x-auto pb-2">
-            <button class="px-6 py-2 bg-primary text-white rounded-full text-xs font-bold">All Sources</button>
-            <button class="px-6 py-2 bg-white text-slate-500 border border-slate-100 rounded-full text-xs font-bold">Lectures</button>
-            <button class="px-6 py-2 bg-white text-slate-500 border border-slate-100 rounded-full text-xs font-bold">Research Papers</button>
+    <!-- MAIN LMS/Research CONTENT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-4">
+        <!-- AI Test/Resource Center -->
+        <div class="lg:col-span-8 bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+            <div class="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-red-500">{% if user.profile.user_role == 'applicant' %}history_edu{% else %}auto_stories{% endif %}</span>
+                    <h3 class="font-headline font-black text-primary uppercase tracking-tight">
+                        {% if user.profile.user_role == 'applicant' %}DTM Test Arshivi{% else %}Akademik Kutubxona{% endif %}
+                    </h3>
+                </div>
+            </div>
+            
+            <div class="p-8">
+                <!-- Archive List -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% if user.profile.user_role == 'applicant' %}
+                        {% if progress %}
+                            {% with first_subject=progress.0.subject %}
+                                {% for sc in first_subject.subjectcourse_set.all %}
+                                    {% for unit in sc.course.units.all %}
+                                    <div onclick="window.location.href='{% url 'take_test' unit.id %}'" class="p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-primary transition-all cursor-pointer">
+                                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">FAN: {{ first_subject.name }}</p>
+                                        <h4 class="text-lg font-black text-slate-800 mb-4">{{ unit.title }}</h4>
+                                        <div class="flex justify-between items-center">
+                                            <span class="px-3 py-1 bg-white text-[10px] font-bold rounded-lg border">{{ unit.tests.count }} ta savol</span>
+                                            <button class="bg-primary text-white p-2 rounded-xl"><span class="material-symbols-outlined text-sm">play_arrow</span></button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endwith %}
+                        {% else %}
+                            <p class="col-span-2 text-center text-slate-400 py-10 italic">Hali fanlar bo'yicha progress mavjud emas.</p>
+                        {% endif %}
+                    {% else %}
+                    <!-- STUDENT ONLY CONTENT -->
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-secondary transition-all cursor-pointer">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">ILMIY SHABLON</p>
+                        <h4 class="text-lg font-black text-slate-800 mb-4">IEEE Maqola Strukturasi</h4>
+                        <div class="flex justify-between items-center">
+                            <span class="px-3 py-1 bg-white text-[10px] font-bold rounded-lg border">PDF + LaTeX</span>
+                            <button class="bg-secondary text-white p-2 rounded-xl"><span class="material-symbols-outlined text-sm">download</span></button>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-secondary transition-all cursor-pointer">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">METODOLOGIYA</p>
+                        <h4 class="text-lg font-black text-slate-800 mb-4">Tadqiqot usullari qo'llanmasi</h4>
+                        <div class="flex justify-between items-center">
+                            <span class="px-3 py-1 bg-white text-[10px] font-bold rounded-lg border">12 ta darslik</span>
+                            <button class="bg-secondary text-white p-2 rounded-xl"><span class="material-symbols-outlined text-sm">menu_book</span></button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-3xl group border border-slate-100 hover:shadow-lg transition-all cursor-pointer">
-                <div class="flex justify-between items-start mb-6">
-                    <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all text-red-500">
-                        <span class="material-symbols-outlined">picture_as_pdf</span>
+        <!-- Integrated Platforms -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-xl relative overflow-hidden">
+                <h4 class="text-sm font-black uppercase tracking-widest mb-6">Rasmiy Integratsiyalar</h4>
+                <div class="space-y-4">
+                    {% if user.profile.user_role == 'applicant' %}
+                    <div class="flex items-center gap-4 group cursor-pointer">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-blue-500 transition-all">
+                            <span class="material-symbols-outlined text-lg">public</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold">Khan Academy Uz</p>
+                            <p class="text-[10px] opacity-60">Matematika va Fanlar</p>
+                        </div>
                     </div>
-                    <span class="text-[10px] font-bold text-secondary uppercase">Summarized [cite: 55]</span>
+                    {% else %}
+                    <div class="flex items-center gap-4 group cursor-pointer">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-orange-500 transition-all">
+                            <span class="material-symbols-outlined text-lg">search_check</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold">Google Scholar</p>
+                            <p class="text-[10px] opacity-60">Akademik Qidiruv</p>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
-                <h4 class="font-headline font-bold text-primary group-hover:text-blue-700 transition-colors">Macroeconomics.pdf</h4>
-                <p class="text-[11px] text-slate-400 mt-1">Uploaded Oct 12 • 4.2 MB</p>
+            </div>
+
+            <!-- Library / PDF Upload -->
+            <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 flex flex-col items-center justify-center text-center">
+                <div class="w-16 h-16 bg-blue-50 text-primary rounded-3xl flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-3xl">auto_stories</span>
+                </div>
+                <h4 class="font-bold text-slate-800">
+                    {% if user.profile.user_role == 'applicant' %}Bilimlar Manbasi{% else %}Ilmiy Kutubxonam{% endif %}
+                </h4>
+                <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                    PDF yoki matnli fayllarni yuklang. Mentor AI ushbu ma'lumotlarni o'rganib chiqadi va sizga aynan shu hujjatlar bo'yicha maslahatlar beradi.
+                </p>
+                <input type="file" id="rag-file-input" class="hidden" accept=".pdf,.txt,.docx" onchange="uploadFile()">
+                <button onclick="document.getElementById('rag-file-input').click()" id="upload-btn" class="mt-6 w-full py-3 bg-slate-100 text-primary rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all hover:bg-primary hover:text-white">
+                    <span id="btn-text">Fayl Yuklash</span>
+                    <div id="btn-spinner" class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                </button>
+                
+                <!-- Status Message -->
+                <div id="upload-status" class="mt-4 text-[10px] font-bold uppercase hidden"></div>
+            </div>
+
+            <!-- Uploaded Documents List -->
+            <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 mt-6">
+                <h4 class="text-sm font-black uppercase tracking-widest mb-6">Mening hujjatlarim</h4>
+                <div id="docs-list" class="space-y-4">
+                    {% if user_documents %}
+                        {% for doc in user_documents %}
+                        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary text-lg">description</span>
+                                <div class="max-w-[150px]">
+                                    <p class="text-xs font-bold truncate">{{ doc.file.name }}</p>
+                                    <p class="text-[9px] text-slate-400">{{ doc.created_at|date:"d.m.Y" }}</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-black {% if doc.is_indexed %}text-emerald-500{% else %}text-orange-400 animate-pulse{% endif %} uppercase">
+                                {% if doc.is_indexed %}Indexed{% else %}Indexing...{% endif %}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-xs text-slate-400 text-center py-4">Hali hujjatlar yuklanmagan.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    async function uploadFile() {
+        const fileInput = document.getElementById('rag-file-input');
+        const btn = document.getElementById('upload-btn');
+        const btnText = document.getElementById('btn-text');
+        const spinner = document.getElementById('btn-spinner');
+        const status = document.getElementById('upload-status');
+
+        if (!fileInput.files.length) return;
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        // Loading state
+        btn.disabled = true;
+        btnText.innerText = "YUKLANMOQDA...";
+        spinner.classList.remove('hidden');
+        status.classList.remove('hidden');
+        status.innerText = "Fayl serverga yuborilmoqda...";
+        status.className = "mt-4 text-[10px] font-bold uppercase text-blue-500";
+
+        try {
+            const response = await fetch('/api/upload-document/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                status.innerText = "Muvaffaqiyatli! AI tahlilni boshladi.";
+                status.className = "mt-4 text-[10px] font-bold uppercase text-emerald-500";
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                throw new Error(data.error || "Xatolik yuz berdi");
+            }
+        } catch (error) {
+            status.innerText = "Xatolik: " + error.message;
+            status.className = "mt-4 text-[10px] font-bold uppercase text-red-500";
+        } finally {
+            btn.disabled = false;
+            btnText.innerText = "FAYL TANLASH";
+            spinner.classList.add('hidden');
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 {% endblock %}
-l>

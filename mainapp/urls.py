@@ -21,4 +21,12 @@ urlpatterns = [
     path('api/notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     # OneID Sync
     path('api/sync-oneid/', views.sync_oneid_api, name='sync_oneid_api'),
+    # Stage 1: University & Docs
+    path('api/university-search/', views.university_search, name='university_search'),
+    path('api/upload-document/', views.upload_document, name='upload_document'),
+    path('test/<int:unit_id>/', views.take_test, name='take_test'),
+    path('api/submit-test/<int:unit_id>/', views.submit_test, name='submit_test'),
+    path('api/generate-plan/', views.generate_plan_api, name='generate_plan_api'),
+    path('api/toggle-task/<int:task_id>/', views.toggle_task_api, name='toggle_task_api'),
+    path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
 ]

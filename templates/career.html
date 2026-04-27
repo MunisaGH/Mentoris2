@@ -1,94 +1,281 @@
 {% extends 'base.html' %}
 
-{% block title %}Career Hub{% endblock %}
+{% block title %}{{ T.university_hub }} - Mentoris{% endblock %}
 
 {% block content %}
-<div class="space-y-10">
-    <section class="max-w-5xl">
-        <h2 class="font-headline text-4xl font-extrabold text-primary tracking-tight mb-2">Career Hub</h2>
-        <p class="text-slate-600 text-lg max-w-2xl">Your AI-driven career path. We use your experience to find the perfect professional match[cite: 60].</p>
+<div class="px-10 py-12 space-y-12 overflow-y-auto h-full pb-32">
+    <!-- Header Section -->
+    <section class="mt-8">
+        <h2 class="font-headline text-4xl font-extrabold text-primary tracking-tight">
+            {% if user.profile.user_role == 'applicant' %}OTM Markazi{% else %}Karyera va Amaliyot Markazi{% endif %}
+        </h2>
+        <p class="text-slate-500 text-lg max-w-3xl leading-relaxed">
+            {% if user.profile.user_role == 'applicant' %}
+                Sizning joriy ko'rsatkichingiz <strong>{{ user.profile.current_score }} ball</strong>. Mentor AI ushbu natija asosida sizga mos keluvchi OTMlarni tahlil qildi.
+            {% else %}
+                Mutaxassisligingiz bo'yicha eng yaxshi <strong>Vakansiyalar</strong> va <strong>Amaliyot</strong> dasturlari tahlili.
+            {% endif %}
+        </p>
     </section>
 
-    <div class="grid grid-cols-12 gap-8">
-        <div class="col-span-12 lg:col-span-4 space-y-8">
-            <div class="bg-white p-8 rounded-[2rem] shadow-sm relative overflow-hidden border border-slate-100">
-                <div class="relative z-10">
-                    <div class="flex items-center gap-2 mb-6">
-                        <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-                        <span class="font-label text-xs font-bold tracking-widest text-secondary uppercase">AI Profile Match</span>
+    {% if user.profile.user_role == 'student' %}
+    <!-- STUDENT: AI-Powered Career Feed (LinkedIn Style) -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        <!-- Main Feed -->
+        <div class="xl:col-span-8 space-y-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Siz uchun tavsiyalar (AI Matching)</h3>
+                <span class="text-[10px] font-bold text-primary bg-blue-50 px-3 py-1 rounded-full">3 ta mos keluvchi vakansiya topildi</span>
+            </div>
+
+            <!-- Job Card 1 -->
+            <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group">
+                <div class="absolute top-0 right-0 py-6 px-10 bg-emerald-50 text-emerald-600 font-headline font-black text-2xl">92% <span class="text-[10px] block font-sans">Match</span></div>
+                
+                <div class="flex gap-6">
+                    <div class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100 group-hover:bg-primary group-hover:text-white transition-all">
+                        <span class="material-symbols-outlined text-4xl">terminal</span>
                     </div>
-                    <h3 class="font-headline text-2xl font-bold mb-4 text-primary">92% match for Senior UI roles</h3>
-                    <p class="text-slate-500 text-sm leading-relaxed mb-6">Mentoris analyzed your <strong>Resume_2024.pdf</strong>. Your proficiency in Figma aligns with market demand[cite: 62, 63].</p>
-                    
-                    <div class="space-y-4">
-                        <div class="p-4 bg-slate-50 rounded-xl">
-                            <div class="flex justify-between text-xs font-bold mb-2">
-                                <span>Skill Alignment</span>
-                                <span class="text-primary">88%</span>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-headline font-black text-slate-800">Senior AI Engineer</h4>
+                        <p class="text-slate-500 font-bold">Huawei Tech • Tashkent HQ</p>
+                        
+                        <div class="mt-4 p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>
+                                <span class="text-[10px] font-black text-primary uppercase">AI Tahlili (Nega mos keladi?)</span>
                             </div>
-                            <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                                <div class="h-full bg-primary" style="width: 88%"></div>
-                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Siz yuklagan <strong>"Machine Learning in Finance"</strong> nomli ilmiy maqolangiz ushbu vakansiyadagi algoritmlar bo'limiga to'g'ridan-to'g'ri mos keladi.
+                            </p>
+                        </div>
+
+                        <div class="mt-6 flex gap-3">
+                            <button class="px-8 py-3 bg-primary text-white font-black text-[10px] rounded-xl shadow-lg shadow-primary/20">ARIZA BERISH</button>
+                            <button class="px-6 py-3 bg-slate-100 text-slate-600 font-black text-[10px] rounded-xl hover:bg-slate-200">SAQLAB QO'YISH</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-50 p-8 rounded-[2rem]">
-                <div class="flex justify-between items-center mb-6">
-                    <h4 class="font-headline font-bold text-primary">RAG Data Sources</h4>
-                    <button class="text-primary font-bold text-xs">Manage</button>
-                </div>
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm">
-                        <span class="material-symbols-outlined text-red-500">picture_as_pdf</span>
-                        <p class="text-sm font-bold truncate flex-1">Resume_2024.pdf</p>
+            <!-- Job Card 2 -->
+            <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group">
+                <div class="absolute top-0 right-0 py-6 px-10 bg-orange-50 text-orange-600 font-headline font-black text-2xl">78% <span class="text-[10px] block font-sans">Match</span></div>
+                
+                <div class="flex gap-6">
+                    <div class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100">
+                        <span class="material-symbols-outlined text-4xl">analytics</span>
                     </div>
-                    <button class="w-full py-2 border-2 border-dashed border-slate-300 rounded-xl text-xs font-bold text-slate-400 hover:bg-white transition-all flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined text-sm">upload_file</span>
-                        Upload Document
-                    </button>
+                    <div class="flex-1">
+                        <h4 class="text-2xl font-headline font-black text-slate-800">Data Analytics Intern</h4>
+                        <p class="text-slate-500 font-bold">Korzinka.uz • Head Office</p>
+                        
+                        <div class="mt-4 p-4 bg-orange-50/30 rounded-2xl border border-orange-100/50">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="material-symbols-outlined text-orange-500 text-sm">lightbulb</span>
+                                <span class="text-[10px] font-black text-orange-500 uppercase">Tavsiya</span>
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                Matematika fanidan bilim darajangiz (85%) yuqori. Agarda **SQL** konspektingizni yuklasangiz, imkoniyat 95% gacha oshadi.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-span-12 lg:col-span-8 space-y-8">
-            <div class="flex flex-wrap items-center gap-3">
-                <div class="px-4 py-2 bg-primary text-white rounded-full text-sm font-bold">All Jobs</div>
-                <div class="px-4 py-2 bg-white text-slate-500 border border-slate-100 rounded-full text-sm font-medium">Tashkent</div>
-                <div class="px-4 py-2 bg-white text-slate-500 border border-slate-100 rounded-full text-sm font-medium">Remote</div>
-            </div>
-
-            <div class="space-y-4">
-                <div class="bg-white p-6 rounded-3xl group hover:shadow-lg transition-all border-l-4 border-transparent hover:border-primary">
-                    <div class="flex gap-6">
-                        <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center overflow-hidden">
-                            <img src="https://api.dicebear.com/7.x/initials/svg?seed=Ucell" alt="Logo"/>
+        <!-- Sidebar (Profile Strength) -->
+        <div class="xl:col-span-4 space-y-8">
+            <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl">
+                <h4 class="text-xl font-headline font-black mb-6">Digital Resume</h4>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold uppercase mb-2">
+                            <span>Ma'lumotlar aniqligi</span>
+                            <span class="text-emerald-400">85%</span>
                         </div>
-                        <div class="flex-1">
-                            <div class="flex justify-between mb-2">
-                                <div>
-                                    <h4 class="text-xl font-bold text-primary">Senior UI/UX Designer</h4>
-                                    <p class="text-slate-500 font-medium text-sm">Ucell • Tashkent, Uzbekistan</p>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-lg font-bold text-primary">$2,500 - $3,500</span>
-                                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">hh.uz</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 pt-4 border-t border-slate-50">
-                                <div class="flex items-center gap-1.5 text-secondary">
-                                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">bolt</span>
-                                    <span class="text-xs font-bold">Matched by AI [cite: 66]</span>
-                                </div>
-                                <button class="ml-auto px-6 py-2 bg-slate-100 hover:bg-primary hover:text-white rounded-full text-sm font-bold transition-all">Quick Apply</button>
-                            </div>
+                        <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full bg-emerald-400" style="width: 85%"></div>
                         </div>
                     </div>
+                    <div class="p-4 bg-white/10 rounded-2xl">
+                        <p class="text-[10px] opacity-60 uppercase font-black tracking-widest mb-2">Eng kuchli bilim:</p>
+                        <p class="text-sm font-bold">Linguistics & AI Ethics</p>
+                    </div>
                 </div>
+                <button class="w-full mt-10 py-4 bg-white text-primary font-black rounded-2xl hover:scale-[1.02] transition-all">REZYUMENI YUKLAB OLISH</button>
             </div>
         </div>
     </div>
+    {% else %}
+    <!-- APPLICANT: University Categories -->
+    <!-- Filters & Search (Logic layer) -->
+    <div class="flex flex-wrap gap-4 items-center bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+        <div class="flex-1 relative min-w-[300px]">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input type="text" id="uni-search-input" placeholder="Universitet yoki yo'nalish nomini yozing..." class="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm focus:ring-2 focus:ring-primary/10">
+        </div>
+        <select class="px-6 py-3 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-600 focus:ring-2 focus:ring-primary/10">
+            <option>Barcha yo'nalishlar</option>
+            <option>Iqtisodiyot</option>
+            <option>IT va Texnologiya</option>
+            <option>Huquqshunoslik</option>
+        </select>
+        <button onclick="searchUniversities()" class="px-8 py-3 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">QIDIRISH</button>
+    </div>
+
+    <!-- MAIN LOGIC: Categories -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-10">
+        <!-- Left: Universities List -->
+        <div class="xl:col-span-8 space-y-8" id="uni-results-container">
+            <!-- Dynamic Results will be injected here -->
+            <div id="uni-placeholder">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-sm">check_circle</span>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Tavsiya etilgan OTMlar</h3>
+                </div>
+                
+                <div class="p-20 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                    <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">travel_explore</span>
+                    <p class="text-slate-400 font-bold">Universitetlarni ko'rish uchun qidiruvdan foydalaning.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Fast Insights -->
+        <div class="xl:col-span-4 space-y-8">
+            <div class="bg-primary rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h4 class="text-xl font-headline font-black mb-6">Xujjatlar holati</h4>
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-emerald-300">check_circle</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-bold">Pasport ma'lumotlari</p>
+                                <p class="text-[10px] opacity-60">Verified via OneID</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-yellow-300">hourglass_empty</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs font-bold">IELTS Sertifikati</p>
+                                <p class="text-[10px] opacity-60">Waiting for upload</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="w-full mt-10 py-4 bg-white text-primary font-black rounded-2xl shadow-xl transition-all active:scale-95">ARIZA TOPSHIRISH</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
+                <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-6">Muhim muddatlar</h4>
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="text-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-100">
+                            <p class="text-xs font-black text-primary">Iyun</p>
+                            <p class="text-lg font-black text-slate-800">20</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-800">Qabul boshlanishi</p>
+                            <p class="text-[10px] text-slate-500">Barcha davlat OTMlari uchun</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+    async function searchUniversities() {
+        const query = document.getElementById('uni-search-input').value;
+        const container = document.getElementById('uni-results-container');
+
+        // Show loading state
+        container.innerHTML = `
+            <div class="flex items-center justify-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/api/university-search/?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            container.innerHTML = ''; // Clear loading
+            
+            if (data.results && data.results.length > 0) {
+                // Add header back
+                container.innerHTML = `
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-sm">search</span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Qidiruv natijalari (${data.results.length})</h3>
+                    </div>
+                `;
+
+                data.results.forEach(item => {
+                    const myScore = parseFloat("{{ user.profile.current_score|default:0 }}") || 0;
+                    const diff = myScore - item.grant_score;
+                    const matchPercent = diff >= 0 ? 100 : Math.max(0, 100 + (diff / 2));
+
+                    const card = `
+                        <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border-l-8 ${matchPercent > 90 ? 'border-emerald-400' : 'border-blue-400'} hover:shadow-xl transition-all group mb-4">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex gap-6">
+                                    <div class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-primary border border-slate-100">
+                                        <span class="material-symbols-outlined text-4xl">account_balance</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-2xl font-black text-primary mb-1">${item.uni_name}</h4>
+                                        <p class="text-slate-500 font-bold">${item.dept_name} • ${item.quota_grant} ta grant o'rni</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-3xl font-black ${matchPercent > 90 ? 'text-emerald-500' : 'text-blue-500'}">${Math.round(matchPercent)}%</div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Imkoniyat</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6 pt-6 border-t border-slate-50">
+                                <div class="flex-1">
+                                    <div class="flex justify-between mb-2">
+                                        <span class="text-xs font-bold text-slate-400">Grant ball: ${item.grant_score}</span>
+                                        <span class="text-xs font-bold text-primary">Siz: ${myScore}</span>
+                                    </div>
+                                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full ${matchPercent > 90 ? 'bg-emerald-400' : 'bg-blue-400'} rounded-full" style="width: ${matchPercent}%"></div>
+                                    </div>
+                                </div>
+                                <button class="px-8 py-3 bg-slate-100 text-primary font-black rounded-2xl group-hover:bg-primary group-hover:text-white transition-all">TANLASH</button>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            } else {
+                container.innerHTML = `
+                    <div class="p-20 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                        <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">search_off</span>
+                        <p class="text-slate-400 font-bold">Hech qanday OTM topilmadi. Boshqa so'z bilan qidirib ko'ring.</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            container.innerHTML = `<p class="text-red-500 text-center py-10 font-bold">Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.</p>`;
+            console.error("Search error:", error);
+        }
+    }
+
+    // Enter tugmasi
+    document.getElementById('uni-search-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') searchUniversities();
+    });
+</script>
 {% endblock %}
-l>

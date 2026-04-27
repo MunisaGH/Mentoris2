@@ -53,34 +53,21 @@
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">key</span>
                             <input type="password" name="password1" id="id_password1" required class="w-full pl-12 pr-12 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-primary">
-                            <button type="button" onclick="togglePassword('id_password1', 'pass-icon1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined text-xl" id="pass-icon1">visibility</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-4">Parolni tasdiqlang</label>
-                        <div class="relative">
-                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">verified_user</span>
-                            <input type="password" name="password2" id="id_password2" required class="w-full pl-12 pr-12 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary/20 transition-all font-semibold text-primary">
-                            <button type="button" onclick="togglePassword('id_password2', 'pass-icon2')" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined text-xl" id="pass-icon2">visibility</span>
-                            </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="pt-4">
-                    <button type="submit" class="w-full py-5 gradient-button bg-gradient-to-r from-secondary to-primary text-white rounded-[2rem] font-bold text-lg shadow-xl hover:opacity-90 transition-all active:scale-[0.98]">
+                    <button type="submit" class="w-full py-5 bg-secondary text-white rounded-[2rem] font-bold text-lg shadow-xl shadow-secondary/20 hover:scale-[1.02] transition-all active:scale-[0.98]">
                         Ro'yxatdan o'tish
                     </button>
-                    <p class="text-[10px] text-center text-slate-400 font-bold uppercase tracking-wider mt-4">
-                        Ro'yxatdan o'tish orqali siz barcha <a href="#" class="text-primary hover:underline">shartlarga</a> rozilik bildirasiz.
+                    <p class="text-[9px] text-center text-slate-400 font-bold uppercase tracking-wider mt-4">
+                        Ro'yxatdan o'tish orqali <a href="#" class="text-primary hover:underline">shartlarga</a> rozilik bildirasiz.
                     </p>
                 </div>
             </form>
 
-            <div class="mt-10 text-center border-t border-slate-50 pt-8">
+            <div class="mt-8 text-center border-t border-slate-50 pt-6">
                 <p class="text-sm font-medium text-slate-500">
                     Hisobingiz bormi? 
                     <a href="{% url 'account_login' %}" class="text-primary font-bold hover:underline ml-1">Kirish</a>

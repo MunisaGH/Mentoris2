@@ -8,7 +8,20 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from groq import Groq
 
-from .models import ChatMessage, ChatSession, Notification, UserProfile
+from django.contrib.auth.models import User
+from .decorators import role_required
+from .validators.rate_limit import rate_limit
+from .validators.file_validator import validate_user_document
+from django.core.exceptions import ValidationError as DjangoValidationError
+from .services.planner_service import PlannerService
+from django.core.mail import send_mail
+import django.utils.timezone
+from .models import (
+    ChatMessage, ChatSession, Notification, UserProfile, 
+    Subject, UserProgress, EducationalResource, University, UniversityDepartment, UserDocument,
+    Course, SubjectCourse, LMSUnit, LMSTest
+)
+from .services.ai_service import MentorAIService
 
 logger = logging.getLogger(__name__)
 
@@ -73,11 +86,14 @@ def normalize_skills(skills):
 
 
 def format_skills(skills):
+    # This is kept for now if needed elsewhere, but AI logic is moved
     normalized_skills = normalize_skills(skills)
     return ", ".join(normalized_skills) if normalized_skills else "Hali o'rganilmoqda"
 
 
 @login_required
+@role_required(allowed_roles=['applicant', 'student'])
+@rate_limit(key_prefix="chat", limit=10, period=60) # 1 daqiqada 10 ta xabar
 def chat_api(request):
     if request.method != "POST":
         return JsonResponse({"answer": "Faqat POST so'rovi qo'llab-quvvatlanadi."}, status=405)
@@ -109,41 +125,10 @@ def chat_api(request):
 
         ChatMessage.objects.create(session=chat_session, role="user", content=message_content)
 
-        user_name = request.user.first_name or request.user.username
-        profile = get_user_profile(request.user)
-        profile_data = f"""
-Foydalanuvchi ma'lumotlari:
-- Ismi: {user_name}
-- Universitet: {profile.university or "Kiritilmagan"}
-- Mutaxassislik: {profile.major or "Kiritilmagan"}
-- Ko'nikmalar: {format_skills(profile.skills_json)}
-- Maqsadlari: {profile.short_term_goals or "Karyera rivoji"}
-"""
+        # USE NEW AI SERVICE
+        ai_service = MentorAIService(request.user, language_code=request.LANGUAGE_CODE or "uz")
+        answer = ai_service.generate_response(message_content, chat_session)
 
-        lang = request.LANGUAGE_CODE or "uz"
-        lang_name = LANGUAGE_NAMES.get(lang, LANGUAGE_NAMES["en"])
-
-        system_instruction = (
-            f"Siz {user_name} uchun Mentoris platformasidagi professional AI mentorsiz. "
-            f"Platforma: Mentoris. {profile_data} "
-            f"QOIDALAR: FAQAT {lang_name} tilida gapiring. "
-            "Maslahatlarni foydalanuvchining profili va maqsadlariga moslang. "
-            "Har doim qisqa va aniq javob bering (2-4 sentence). "
-            "Platformadagi Career Hub va Knowledge Base kabi imkoniyatlarni eslatib turing."
-        )
-
-        llm_messages = [{"role": "system", "content": system_instruction}]
-
-        history = chat_session.messages.order_by("-timestamp")[:10]
-        for history_message in reversed(history):
-            llm_messages.append({"role": history_message.role, "content": history_message.content})
-
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=llm_messages,
-        )
-
-        answer = response.choices[0].message.content
         ChatMessage.objects.create(session=chat_session, role="assistant", content=answer)
         chat_session.save()
 
@@ -155,11 +140,16 @@ Foydalanuvchi ma'lumotlari:
         return JsonResponse({"answer": "JSON formati noto'g'ri."}, status=400)
     except Exception as error:
         logger.exception("Failed to process chat request: %s", error)
-        return JsonResponse({"answer": get_localized_text(request, GENERIC_CHAT_ERROR)}, status=500)
+        return JsonResponse({"answer": "Tizimda kutilmagan xatolik yuz berdi."}, status=500)
 
 
-@login_required
 def dashboard(request):
+    if not request.user.is_authenticated:
+        return render(request, "daily.html", {"is_guest": True})
+    
+    profile = get_user_profile(request.user)
+    if not profile.role_selected:
+        return redirect("complete_profile")
     return render(request, "daily.html")
 
 
@@ -234,19 +224,36 @@ def get_sessions(request):
     return JsonResponse({"sessions": data, "active_id": active.id})
 
 
-@login_required
 def knowledge_base(request):
-    return render(request, "knowledge.html")
+    subjects = Subject.objects.all()
+    
+    if not request.user.is_authenticated:
+        return render(request, "knowledge.html", {
+            "subjects": subjects,
+            "is_guest": True
+        })
+
+    # Only applicants track DTM subject progress
+    if request.user.profile.user_role == 'applicant':
+        for s in subjects:
+            UserProgress.objects.get_or_create(user=request.user, subject=s)
+    
+    progress = UserProgress.objects.filter(user=request.user)
+    user_documents = UserDocument.objects.filter(user=request.user).order_by("-created_at")
+    
+    return render(request, "knowledge.html", {
+        "subjects": subjects,
+        "progress": progress,
+        "user_documents": user_documents
+    })
 
 
-@login_required
 def career_hub(request):
-    return render(request, "career.html")
+    return render(request, "career.html", {"is_guest": not request.user.is_authenticated})
 
 
-@login_required
 def gov_services(request):
-    return render(request, "gov.html")
+    return render(request, "gov.html", {"is_guest": not request.user.is_authenticated})
 
 
 @login_required
@@ -254,18 +261,29 @@ def complete_profile(request):
     profile = get_user_profile(request.user)
 
     if request.method == "POST":
+        # Handle role selection or profile completion
+        role = request.POST.get("user_role")
+        if role and not profile.role_selected:
+            profile.user_role = role
+            profile.role_selected = True
+            profile.save()
+            
+            # If it's a role update from the selection screen, we might stay to fill other fields or redirect
+            if "first_name" not in request.POST:
+                return redirect("complete_profile")
+
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
         phone = request.POST.get("phone")
         birth_date = request.POST.get("birth_date")
 
-        if first_name and last_name and phone and birth_date:
+        if first_name and last_name:
             request.user.first_name = first_name
             request.user.last_name = last_name
             request.user.save()
 
             profile.phone_number = phone
-            profile.birth_date = birth_date
+            profile.birth_date = birth_date or None
             profile.save()
 
             Notification.objects.create(
@@ -283,12 +301,26 @@ def complete_profile(request):
 @login_required
 def profile_settings(request):
     profile = get_user_profile(request.user)
+    all_subjects = Subject.objects.all()
 
     if request.method == "POST":
         request.user.first_name = request.POST.get("first_name", request.user.first_name)
         request.user.last_name = request.POST.get("last_name", request.user.last_name)
         request.user.save()
 
+        # XAVFSIZLIK: Agar rol allaqachon tanlangan bo'lsa, uni o'zgartirishga yo'l qo'ymaslik
+        if not profile.role_selected:
+             profile.user_role = request.POST.get("user_role", profile.user_role)
+             profile.role_selected = True
+
+        profile.current_score = request.POST.get("current_score", profile.current_score) or 0.0
+        profile.target_university = request.POST.get("target_university", profile.target_university)
+        profile.selected_field = request.POST.get("selected_field", profile.selected_field)
+        
+        # New subject tracking
+        profile.major_subject_1 = request.POST.get("major_subject_1", profile.major_subject_1)
+        profile.major_subject_2 = request.POST.get("major_subject_2", profile.major_subject_2)
+        
         profile.phone_number = request.POST.get("phone", profile.phone_number)
         profile.birth_date = request.POST.get("birth_date", profile.birth_date) or None
         profile.university = request.POST.get("university", profile.university)
@@ -319,6 +351,7 @@ def profile_settings(request):
 
     return render(request, "profile.html", {
         "profile": profile,
+        "all_subjects": all_subjects,
         "skills_value": ", ".join(normalize_skills(profile.skills_json)),
     })
 
@@ -388,6 +421,64 @@ def sync_oneid_api(request):
 
 
 @login_required
+@role_required(allowed_roles=['applicant', 'student'])
+def university_search(request):
+    query = request.GET.get('q', '')
+    if query:
+        departments = UniversityDepartment.objects.filter(name__icontains=query) | \
+                      UniversityDepartment.objects.filter(university__name__icontains=query)
+    else:
+        departments = UniversityDepartment.objects.all()[:10]
+    
+    data = []
+    for d in departments:
+        data.append({
+            "id": d.id,
+            "uni_name": d.university.name,
+            "dept_name": d.name,
+            "grant_score": float(d.grant_score),
+            "contract_score": float(d.contract_score),
+            "quota_grant": d.grant_quota,
+            "quota_contract": d.contract_quota
+        })
+    return JsonResponse({"results": data})
+
+@login_required
+@role_required(allowed_roles=['applicant', 'student'])
+@rate_limit(key_prefix="upload", limit=3, period=60) # 1 daqiqada 3 ta fayl
+def upload_document(request):
+    if request.method == "POST" and request.FILES.get('file'):
+        file = request.FILES['file']
+        
+        try:
+            # Career AI style deep validation
+            validate_user_document(file)
+            
+            doc = UserDocument.objects.create(
+                user=request.user,
+                file=file,
+                title=file.name,
+                status='uploaded'
+            )
+            
+            # Start background processing (simulation for now)
+            doc.status = 'indexed'
+            doc.save()
+            
+            return JsonResponse({
+                "success": True, 
+                "message": "Foydali hujjat yuklandi va tahlilga yuborildi.",
+                "doc_id": doc.id
+            })
+        except DjangoValidationError as e:
+            return JsonResponse({"success": False, "error": str(e.message)}, status=400)
+        except Exception as e:
+            logger.error(f"Upload error: {e}")
+            return JsonResponse({"success": False, "error": "Faylni yuklashda xatolik yuz berdi."}, status=500)
+            
+    return JsonResponse({"success": False, "error": "Faqat POST so'rovi va fayl yuborilishi kerak."}, status=400)
+
+@login_required
 def mark_notification_read(request, notification_id):
     if request.method == "POST":
         notification = get_object_or_404(Notification, id=notification_id, user=request.user)
@@ -395,3 +486,158 @@ def mark_notification_read(request, notification_id):
         notification.save()
         return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
+
+
+@login_required
+@role_required(allowed_roles=['applicant', 'student'])
+def take_test(request, unit_id):
+    unit = get_object_or_404(LMSUnit, id=unit_id)
+    tests = unit.tests.all()
+    return render(request, "take_test.html", {"unit": unit, "tests": tests})
+
+@login_required
+@role_required(allowed_roles=['applicant', 'student'])
+def submit_test(request, unit_id):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+    
+    unit = get_object_or_404(LMSUnit, id=unit_id)
+    tests = unit.tests.all()
+    
+    correct_count = 0
+    total_count = tests.count()
+    
+    if total_count == 0:
+        return JsonResponse({"success": True, "score": 100})
+
+    for test in tests:
+        user_answer = request.POST.get(f"test_{test.id}")
+        if user_answer == test.correct_answer:
+            correct_count += 1
+    
+    score_percent = (correct_count / total_count) * 100 if total_count > 0 else 100
+    
+    # Update UserProgress for the subject associated with this course
+    subject_course = SubjectCourse.objects.filter(course=unit.course).first()
+    if subject_course:
+        progress, created = UserProgress.objects.get_or_create(
+            user=request.user, 
+            subject=subject_course.subject
+        )
+        if score_percent >= 70:
+            progress.knowledge_percentage = min(100, progress.knowledge_percentage + 5.0)
+            progress.completed_lessons_count += 1
+            progress.save()
+            
+            Notification.objects.create(
+                user=request.user,
+                title="Test yakunlandi",
+                message=f"{unit.title} bo'yicha natijangiz: {score_percent}%. Bilim darajangiz oshdi!",
+                link="/knowledge/"
+            )
+
+    return JsonResponse({
+        "success": True, 
+        "score": score_percent, 
+        "correct": correct_count, 
+        "total": total_count
+    })
+
+@login_required
+def generate_plan_api(request):
+    """
+    AI yordamida balanslangan reja tuzadi va emailga yuboradi.
+    """
+    profile = get_user_profile(request.user)
+    planner = PlannerService()
+    
+    # 0. Oldingi bajarilmagan vazifalarni "Karzinka"ga o'tkazish
+    current_plan = profile.daily_plan_json
+    if current_plan and 'tasks' in current_plan:
+        backlog = profile.task_backlog_json if isinstance(profile.task_backlog_json, list) else []
+        for task in current_plan['tasks']:
+            if task['status'] == 'pending':
+                backlog.append({
+                    "task": task['task'],
+                    "time": task['time'],
+                    "missed_at": str(django.utils.timezone.now().date())
+                })
+        profile.task_backlog_json = backlog
+    
+    plan = planner.generate_balanced_plan(profile)
+    
+    # 1. Profilga rejani saqlash
+    profile.daily_plan_json = plan
+    profile.save()
+    
+    # 2. Email yuborish
+    try:
+        subject = f"Assalomu alaykum, {request.user.first_name}! Bugungi rejangiz tayyor."
+        message = f"Bugungi asosiy maqsad: {plan['daily_goal']}\n\nJadval:\n"
+        for item in plan['schedule']:
+            message += f"- {item['time']}: {item['task']} ({item['type']})\n"
+        message += f"\nMaslahat: {plan['advice']}\n\nMentoris AI - Kelajagingizni biz bilan quring!"
+        
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [request.user.email],
+            fail_silently=True,
+        )
+    except Exception as e:
+        logger.error(f"Email error: {e}")
+
+    return JsonResponse({"success": True, "plan": plan})
+
+@login_required
+def toggle_task_api(request, task_id):
+    """
+    Vazifa holatini o'zgartiradi (done/pending).
+    """
+    profile = get_user_profile(request.user)
+    plan = profile.daily_plan_json
+    
+    if 'tasks' in plan:
+        for task in plan['tasks']:
+            if task['id'] == task_id:
+                task['status'] = 'done' if task['status'] == 'pending' else 'pending'
+                
+                # Energy score update
+                if task['status'] == 'done':
+                    profile.energy_score = min(100, profile.energy_score + 5)
+                else:
+                    profile.energy_score = max(0, profile.energy_score - 5)
+                
+                break
+        
+        profile.daily_plan_json = plan
+        profile.save()
+        return JsonResponse({"success": True, "status": task['status'], "energy": profile.energy_score})
+    
+    return JsonResponse({"success": False, "error": "Plan not found"})
+
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        messages.error(request, "Ushbu sahifaga kirish huquqingiz yo'q.")
+        return redirect('dashboard')
+    
+    # Statistics
+    total_users = User.objects.count()
+    applicants = UserProfile.objects.filter(user_role='applicant').count()
+    students = UserProfile.objects.filter(user_role='student').count()
+    
+    # Data Lists
+    all_users = UserProfile.objects.select_related('user').all().order_by('-user__date_joined')
+    all_docs = UserDocument.objects.select_related('user').all().order_by('-created_at')
+    all_chats = ChatSession.objects.select_related('user').all().order_by('-updated_at')
+    
+    return render(request, "admin_dashboard.html", {
+        "total_users": total_users,
+        "applicants": applicants,
+        "students": students,
+        "all_users": all_users,
+        "all_docs": all_docs,
+        "all_chats": all_chats,
+    })
