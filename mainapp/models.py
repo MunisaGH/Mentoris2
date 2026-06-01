@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('applicant', 'Abituriyent'),
@@ -245,3 +244,19 @@ class UserDocument(models.Model):
 
     def __str__(self):
         return self.title or self.file.name
+
+
+# ══════════════════ SECURITY & AUDIT (PHASE 1.5) ══════════════════
+
+class AuditLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=255)
+    path = models.CharField(max_length=500)
+    method = models.CharField(max_length=10)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} | {self.action} | {self.timestamp}"
+

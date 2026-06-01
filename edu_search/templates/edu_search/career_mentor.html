@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Karyera AI Mentor - Mentoris{% endblock %}
+
+{% block content %}
+<div class="px-10 py-12 space-y-12 overflow-y-auto h-full pb-32">
+    
+    <!-- Header Section -->
+    <section class="mt-8 flex items-center justify-between">
+        <div>
+            <h2 class="font-headline text-4xl font-extrabold text-primary tracking-tight flex items-center gap-3">
+                <span class="material-symbols-outlined text-4xl text-blue-500">psychology</span>
+                Karyera AI Mentor
+            </h2>
+            <p class="text-slate-500 text-lg max-w-3xl leading-relaxed mt-2">
+                Sizning qiziqishlaringiz va yashirin qobiliyatlaringizni <strong>600,000 ta ilmiy faktlar</strong> asosida NLP (Sun'iy intellekt) yordamida tahlil qilib, 12 ta sohadan eng mosini ajratib beramiz.
+            </p>
+        </div>
+    </section>
+
+    <!-- Asosiy Form Qismi -->
+    <section class="max-w-4xl bg-white rounded-3xl p-8 border border-slate-200 shadow-sm transition hover:shadow-md">
+        <form method="POST" action="/uz/search/career-mentor/">
+            {% csrf_token %}
+            <div class="mb-6">
+                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">O'z qiziqishlaringiz va qobiliyatlaringizni yozing</label>
+                <textarea name="query" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Misol: Men matematika va fizika misollarini ishlashni yaxshi ko'raman. Dvigatellar va chizmalar qiziqtiradi..." required>{{ query }}</textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-primary hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-blue-500/20">
+                <span class="material-symbols-outlined text-xl">auto_awesome</span>
+                AI orqali Sohani Aniqlash
+            </button>
+        </form>
+    </section>
+
+    <!-- Natija va Ulanish Qismi -->
+    {% if result %}
+    <section class="max-w-4xl space-y-6 mt-8 animate-fade-in">
+        
+        <!-- 1. Karyera Natijasi va Havolalar -->
+        <div class="bg-blue-50/50 rounded-3xl p-8 border border-blue-100 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-8 opacity-10">
+                <span class="material-symbols-outlined text-9xl text-primary">verified</span>
+            </div>
+            
+            <div class="relative z-10">
+                <h3 class="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-4">NLP Analizi Natijasi</h3>
+                
+                <div class="flex items-start gap-6">
+                    <div class="w-20 h-20 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary flex-shrink-0 border border-blue-50">
+                        <span class="material-symbols-outlined text-5xl">work</span>
+                    </div>
+                    <div>
+                        <h2 class="text-4xl font-black text-slate-900 mb-2">{{ result }}</h2>
+                        <p class="text-sm text-slate-600 max-w-lg mb-2 font-medium">
+                            {{ domain_info }}
+                        </p>
+                        <p class="text-xs text-slate-400 max-w-lg mb-6">
+                            Sun'iy intellekt sizning so'zlaringizni 120,000 qatorli ulkan matn bazasi bilan solishtirib chiqdi.
+                        </p>
+                        
+                        <!-- Mentoris Boshqa qismlari bilan uzviy bog'lanish -->
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <a href="{% url 'career_hub' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary font-bold rounded-xl border border-blue-200 hover:bg-blue-50 transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-lg">account_balance</span>
+                                {% if user.profile.user_role == 'applicant' %}OTM Markazida ko'rish{% else %}Karyera Markazida ko'rish{% endif %}
+                            </a>
+                            <a href="{% url 'knowledge_base' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-600 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-lg">library_books</span>
+                                Mavzuga oid darsliklar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Akademik Tahlil: Tokenizatsiya va TF-IDF -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Tokenizatsiya -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition hover:shadow-md">
+                <h3 class="flex items-center gap-2 text-sm font-bold text-slate-800 mb-4 border-b pb-3">
+                    <span class="material-symbols-outlined text-purple-500">cut</span>
+                    Matn Tokenizatsiyasi (Bo'laklash)
+                </h3>
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">NLP jarayonining birinchi bosqichi. Sizning gapingiz maxsus filtrdan o'tib, qo'shimchalar olib tashlandi va faqat yaroqli o'zaklar ajratildi:</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for word, count in token_counts.items %}
+                    <span class="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg border border-purple-100 flex items-center gap-1">
+                        {{ word }} <span class="bg-purple-200 text-purple-800 px-1.5 py-0.5 rounded text-[10px]">x{{ count }}</span>
+                    </span>
+                    {% empty %}
+                    <span class="text-xs text-slate-400">Yaroqli tokenlar topilmadi.</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- TF-IDF -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm transition hover:shadow-md">
+                <h3 class="flex items-center gap-2 text-sm font-bold text-slate-800 mb-4 border-b pb-3">
+                    <span class="material-symbols-outlined text-orange-500">query_stats</span>
+                    TF-IDF Vaznlari (Chastota)
+                </h3>
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">Model har bir so'zning umumiy bazadagi noyobligini hisoblab, siz kiritgan matndagi eng ta'sirli (kalit) so'zlarni aniqladi:</p>
+                <div class="space-y-3">
+                    {% for word, weight in frequencies.items %}
+                    <div class="flex items-center justify-between group">
+                        <span class="text-xs font-bold text-slate-700 w-24 truncate" title="{{ word }}">{{ word }}</span>
+                        <div class="flex-1 mx-4 h-2.5 bg-slate-100 rounded-full overflow-hidden relative">
+                            <div class="absolute top-0 left-0 h-full bg-orange-400 rounded-full transition-all duration-1000" style="width: calc({{ weight }} * 100%)"></div>
+                        </div>
+                        <span class="text-xs font-mono font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">{{ weight }}</span>
+                    </div>
+                    {% empty %}
+                    <span class="text-xs text-slate-400">Vaznlar hisoblanmadi.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}

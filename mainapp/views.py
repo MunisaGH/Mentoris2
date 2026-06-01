@@ -150,6 +150,15 @@ def dashboard(request):
     profile = get_user_profile(request.user)
     if not profile.role_selected:
         return redirect("complete_profile")
+        
+    if request.user.is_staff:
+        return redirect("admin_dashboard")
+        
+    if profile.user_role == 'applicant':
+        return render(request, "applicant_dashboard.html", {"profile": profile})
+    elif profile.user_role == 'student':
+        return render(request, "student_dashboard.html", {"profile": profile})
+        
     return render(request, "daily.html")
 
 
@@ -443,6 +452,8 @@ def university_search(request):
         })
     return JsonResponse({"results": data})
 
+from .utils_ai import process_document
+
 @login_required
 @role_required(allowed_roles=['applicant', 'student'])
 @rate_limit(key_prefix="upload", limit=3, period=60) # 1 daqiqada 3 ta fayl
@@ -461,15 +472,25 @@ def upload_document(request):
                 status='uploaded'
             )
             
-            # Start background processing (simulation for now)
-            doc.status = 'indexed'
+            # Process the document for RAG
+            doc.status = 'processing'
             doc.save()
             
-            return JsonResponse({
-                "success": True, 
-                "message": "Foydali hujjat yuklandi va tahlilga yuborildi.",
-                "doc_id": doc.id
-            })
+            vector_db = process_document(doc.file.path, request.user.id)
+            
+            if vector_db:
+                doc.status = 'indexed'
+                doc.save()
+                return JsonResponse({
+                    "success": True, 
+                    "message": "Foydali hujjat yuklandi va RAG tizimiga joylandi.",
+                    "doc_id": doc.id
+                })
+            else:
+                doc.status = 'error'
+                doc.save()
+                return JsonResponse({"success": False, "error": "Hujjatdan matn ajratib olinmadi yoki xatolik."}, status=400)
+                
         except DjangoValidationError as e:
             return JsonResponse({"success": False, "error": str(e.message)}, status=400)
         except Exception as e:
@@ -487,6 +508,65 @@ def mark_notification_read(request, notification_id):
         return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
 
+
+from .services.quiz_service import AIQuizService
+
+@login_required
+@role_required(allowed_roles=['applicant', 'student'])
+def ai_quiz_view(request):
+    subjects = Subject.objects.all()
+    return render(request, "ai_quiz.html", {"subjects": subjects})
+
+@login_required
+@role_required(allowed_roles=['applicant', 'student'])
+def generate_quiz_api(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Faqat POST so'rovi qabul qilinadi."}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        topic = data.get('topic', '')
+        difficulty = data.get('difficulty', 'medium')
+        
+        if not topic:
+            return JsonResponse({"success": False, "error": "Mavzu kiritilishi shart."})
+            
+        service = AIQuizService(language_code=request.LANGUAGE_CODE or "uz")
+        quiz_data = service.generate_quiz(topic=topic, difficulty=difficulty, num_questions=5)
+        
+        if "error" in quiz_data:
+            return JsonResponse({"success": False, "error": quiz_data["error"]})
+            
+        return JsonResponse({"success": True, "quiz": quiz_data})
+    except Exception as e:
+        logger.error(f"Generate quiz api error: {e}")
+        return JsonResponse({"success": False, "error": "Tizim xatosi."}, status=500)
+
+@login_required
+@role_required(allowed_roles=['applicant', 'student'])
+def submit_ai_quiz_api(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Faqat POST so'rovi qabul qilinadi."}, status=405)
+        
+    try:
+        data = json.loads(request.body)
+        score_percent = data.get('score', 0)
+        topic = data.get('topic', 'Noma\'lum mavzu')
+        
+        profile = get_user_profile(request.user)
+        profile.energy_score = min(100, profile.energy_score + 10) # Test yechgani uchun energiya qo'shiladi
+        profile.save()
+        
+        Notification.objects.create(
+            user=request.user,
+            title="AI Quiz yakunlandi",
+            message=f"\"{topic}\" mavzusi bo'yicha test natijangiz: {score_percent}%.",
+            link="/ai-quiz/"
+        )
+        return JsonResponse({"success": True, "message": "Natija saqlandi!"})
+    except Exception as e:
+        logger.error(f"Submit quiz api error: {e}")
+        return JsonResponse({"success": False, "error": "Tizim xatosi."}, status=500)
 
 @login_required
 @role_required(allowed_roles=['applicant', 'student'])
@@ -619,8 +699,8 @@ def toggle_task_api(request, task_id):
 
 @login_required
 def admin_dashboard(request):
-    if not request.user.is_staff:
-        messages.error(request, "Ushbu sahifaga kirish huquqingiz yo'q.")
+    if not request.user.is_superuser:
+        messages.error(request, "Ushbu sahifaga kirish huquqingiz yo'q. Faqat Super Admin kira oladi.")
         return redirect('dashboard')
     
     # Statistics
@@ -629,9 +709,11 @@ def admin_dashboard(request):
     students = UserProfile.objects.filter(user_role='student').count()
     
     # Data Lists
+    from .models import AuditLog
     all_users = UserProfile.objects.select_related('user').all().order_by('-user__date_joined')
     all_docs = UserDocument.objects.select_related('user').all().order_by('-created_at')
     all_chats = ChatSession.objects.select_related('user').all().order_by('-updated_at')
+    all_logs = AuditLog.objects.select_related('user').all().order_by('-timestamp')[:100]
     
     return render(request, "admin_dashboard.html", {
         "total_users": total_users,
@@ -640,4 +722,5 @@ def admin_dashboard(request):
         "all_users": all_users,
         "all_docs": all_docs,
         "all_chats": all_chats,
+        "all_logs": all_logs,
     })

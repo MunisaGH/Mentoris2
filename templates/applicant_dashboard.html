@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}Abituriyentlar Paneli | Mentoris{% endblock %}
+
+{% block content %}
+<div class="h-full flex flex-col p-8">
+    <!-- Header Area -->
+    <div class="flex justify-between items-end mb-12">
+        <div>
+            <p class="text-[11px] font-black text-primary/50 uppercase tracking-[0.3em] mb-3">Abituriyent Paneli</p>
+            <h1 class="text-6xl font-headline font-black text-slate-900 tracking-tight leading-[1.1]">
+                Salom, {{ user.first_name }}.<br/>
+                <span class="text-slate-300">Talaba bo'lishga qadam tashlaymizmi?</span>
+            </h1>
+        </div>
+        
+        <div class="flex items-center gap-6">
+            <!-- Energy Score -->
+            <div class="bg-white px-8 py-4 rounded-[2rem] shadow-xl border border-slate-50 text-center relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Energy Bar</p>
+                    <div class="text-3xl font-black text-emerald-500" id="energy-val">{{ profile.energy_score }}%</div>
+                </div>
+                <div class="absolute bottom-0 left-0 h-1 bg-emerald-500 transition-all duration-1000" id="energy-bar" style="width: {{ profile.energy_score }}%"></div>
+            </div>
+
+            <button onclick="generateAIPlan()" id="plan-btn" class="flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+                <span class="material-symbols-outlined">auto_awesome</span>
+                YANGI KUNLIK REJA
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="grid grid-cols-12 gap-10">
+        <!-- Main Timeline -->
+        <div class="col-span-12 lg:col-span-7 space-y-8">
+            <div class="bg-white rounded-[3rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-100">
+                <div class="flex justify-between items-center mb-10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-3xl">task_alt</span>
+                        </div>
+                        <h2 class="text-2xl font-headline font-bold text-slate-800">Bugungi tayyorgarlik (AI Reja)</h2>
+                    </div>
+                </div>
+
+                <!-- Task List -->
+                <div class="space-y-8 relative before:absolute before:left-[21px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-50">
+                    {% if profile.daily_plan_json.tasks %}
+                        {% for task in profile.daily_plan_json.tasks %}
+                        <div class="relative pl-14 group flex items-center justify-between">
+                            <div class="absolute left-0 top-1/2 -translate-y-1/2 z-10">
+                                <button onclick="toggleTask({{ task.id }})" id="task-check-{{ task.id }}" 
+                                    class="w-11 h-11 rounded-2xl border-2 transition-all flex items-center justify-center 
+                                    {% if task.status == 'done' %}bg-emerald-500 border-emerald-500 text-white{% else %}bg-white border-slate-200 text-transparent hover:border-primary{% endif %}">
+                                    <span class="material-symbols-outlined text-xl">check</span>
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1">
+                                <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">{{ task.time }}</p>
+                                <h4 class="text-lg font-headline font-bold {% if task.status == 'done' %}text-slate-300 line-through{% else %}text-slate-800{% endif %}" id="task-title-{{ task.id }}">
+                                    {{ task.task }}
+                                </h4>
+                            </div>
+
+                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
+                                {% if task.type == 'study' %}bg-blue-50 text-primary
+                                {% elif task.type == 'rest' %}bg-purple-50 text-secondary
+                                {% else %}bg-emerald-50 text-emerald-600{% endif %}">
+                                {{ task.type }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-20">
+                            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span class="material-symbols-outlined text-4xl text-slate-300">auto_awesome_motion</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-400">Reja tuzilmagan</h3>
+                            <button onclick="generateAIPlan()" class="text-primary font-black text-xs uppercase tracking-widest mt-4 underline">Hozir tuzish</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- AI Quiz / Evening Test Promotion -->
+            <div class="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+                <div class="relative z-10 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-headline font-black mb-2">AI Quiz Generator</h3>
+                        <p class="text-slate-400 text-sm max-w-md">Kunlik o'tilgan darslar bo'yicha sun'iy intellekt avtomatik ravishda adaptiv test tuzib beradi.</p>
+                    </div>
+                    <a href="/knowledge/" class="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:bg-primary hover:text-white transition-all shadow-xl">
+                        TESTNI BOSHLASH
+                    </a>
+                </div>
+                <span class="material-symbols-outlined absolute -right-8 -bottom-8 text-[12rem] opacity-5">quiz</span>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-span-12 lg:col-span-5 space-y-8">
+            <!-- Kirish Pasporti -->
+            <div class="bg-gradient-to-br from-primary to-blue-900 rounded-[3rem] p-10 text-white relative overflow-hidden">
+                <h4 class="text-xl font-black mb-4">Kirish Pasporti Ehtimolligi</h4>
+                <div class="text-5xl font-black mb-2">{{ profile.current_score|default:"0.0" }}%</div>
+                <p class="text-xs text-blue-200 leading-relaxed">Tanlangan maqsad: {{ profile.target_university|default:"Maqsad belgilanmagan" }}. O'rtacha o'tish balli tahlili orqali qabul imkoniyati.</p>
+                <span class="material-symbols-outlined absolute -right-6 -bottom-6 text-[10rem] opacity-10">verified</span>
+            </div>
+            
+            <!-- Karzinka (Backlog) -->
+            <div class="bg-white rounded-[3rem] p-10 shadow-xl border border-red-50 relative overflow-hidden">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl">shopping_basket</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-headline font-black text-slate-800">Qarzlar Savatchasi</h3>
+                        <p class="text-[10px] text-red-400 font-bold uppercase">Bajarilmagan vazifalar</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    {% if profile.task_backlog_json %}
+                        <div class="space-y-3">
+                            {% for item in profile.task_backlog_json|slice:":5" %}
+                            <div class="flex items-center justify-between p-3 bg-red-50/50 rounded-2xl border border-red-100/50">
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-red-400 text-sm">history</span>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-700">{{ item.task }}</p>
+                                        <p class="text-[9px] text-slate-400 uppercase">{{ item.missed_at }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-slate-400 leading-relaxed italic">
+                            Savatchada qarzlar yo'q. Barikalla!
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function toggleTask(taskId) {
+        // Toggle logic (same as daily.html)
+        const checkBtn = document.getElementById(`task-check-${taskId}`);
+        const title = document.getElementById(`task-title-${taskId}`);
+        
+        try {
+            const response = await fetch(`/api/toggle-task/${taskId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.status === 'done') {
+                    checkBtn.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+                    checkBtn.classList.remove('bg-white', 'border-slate-200', 'text-transparent');
+                    title.classList.add('text-slate-300', 'line-through');
+                    title.classList.remove('text-slate-800');
+                } else {
+                    checkBtn.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
+                    checkBtn.classList.add('bg-white', 'border-slate-200', 'text-transparent');
+                    title.classList.remove('text-slate-300', 'line-through');
+                    title.classList.add('text-slate-800');
+                }
+                document.getElementById('energy-val').innerText = `${data.energy}%`;
+                document.getElementById('energy-bar').style.width = `${data.energy}%`;
+            }
+        } catch (e) {
+            console.error("Toggle error:", e);
+        }
+    }
+
+    async function generateAIPlan() {
+        const btn = document.getElementById('plan-btn');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'TUZILMOQDA...';
+        
+        try {
+            const response = await fetch('/api/generate-plan/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+            const data = await response.json();
+            if (data.success) location.reload();
+        } catch (e) {
+            alert("Aloqa xatosi.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

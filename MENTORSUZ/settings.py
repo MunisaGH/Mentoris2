@@ -8,7 +8,7 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-local-dev-only')
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
 
 INSTALLED_APPS = [
@@ -23,7 +23,10 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'mainapp'
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'mainapp',
+    'edu_search',
 ]
 
 SITE_ID = 1
@@ -39,6 +42,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'csp.middleware.CSPMiddleware', # CSP himoyasi
     'allauth.account.middleware.AccountMiddleware',
+    'django_otp.middleware.OTPMiddleware', # 2FA (Ikki bosqichli autentifikatsiya)
+    'mainapp.middleware.AuditMiddleware', # Panoptikum (Har bir harakatni kuzatish)
 ]
 
 USE_I18N = True
@@ -132,8 +137,10 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_ADAPTER = 'mainapp.adapters.NoSignupAccountAdapter'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -176,3 +183,5 @@ LOGGING = {
         },
     },
 }
+# Force Reload
+# Force Reload 2

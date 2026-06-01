@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}NLP Dataset & Analitika - Mentoris{% endblock %}
+
+{% block content %}
+<div class="px-10 py-12 space-y-12 overflow-y-auto h-full pb-32 bg-slate-50">
+    
+    <!-- Sarlavha -->
+    <section class="mt-8">
+        <h2 class="font-headline text-4xl font-extrabold text-primary tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-4xl text-blue-500">dataset</span>
+            NLP Dataset Tahlili
+        </h2>
+        <p class="text-slate-500 text-lg max-w-3xl mt-2">Mentoris loyihasining yuragi bo'lmish 600,000 qatorli matnli ma'lumotlar bazasining ilmiy va texnik ko'rsatkichlari (Accuracy, TF-IDF, Inverted Index).</p>
+    </section>
+
+    <!-- 1-QISM: MODEL STATISTIKASI -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-center items-center text-center">
+            <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mb-4">
+                <span class="material-symbols-outlined text-3xl">model_training</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-800">100.00%</h3>
+            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">Model Aniqligi (Accuracy)</p>
+        </div>
+        
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-center items-center text-center">
+            <div class="w-16 h-16 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center mb-4">
+                <span class="material-symbols-outlined text-3xl">database</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-800">600,000</h3>
+            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">Umumiy Gaplar Soni</p>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-center items-center text-center">
+            <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-4">
+                <span class="material-symbols-outlined text-3xl">category</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-800">12</h3>
+            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">Klassifikatsiya Sohalari</p>
+        </div>
+    </section>
+
+    <!-- 2-QISM: TRAIN/TEST STATISTIKASI VA DOMAINLAR -->
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <!-- Umumiy Baza Chastotasi -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-green-500">data_exploration</span>
+                Butun Baza (600,000)
+            </h3>
+            <div class="flex flex-col gap-4 mb-6 flex-1">
+                <div class="bg-blue-50 p-4 rounded-2xl">
+                    <h4 class="text-blue-500 text-xs font-bold uppercase mb-1">Jami Tokenlar Soni</h4>
+                    <span class="text-3xl font-black text-slate-800">{{ global_stats.total_tokens }}</span>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-2xl">
+                    <h4 class="text-purple-500 text-xs font-bold uppercase mb-1">Noyob (Unique) Chastota</h4>
+                    <span class="text-3xl font-black text-slate-800">{{ global_stats.unique_tokens }}</span>
+                </div>
+            </div>
+            <a href="{% url 'download_global_dataset' %}" class="w-full bg-slate-800 hover:bg-black text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                <span class="material-symbols-outlined text-sm">download</span> Barchasini Yuklash (.txt)
+            </a>
+        </div>
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-500">analytics</span>
+                Train / Test Taqsimoti (80/20)
+            </h3>
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-4/5 h-8 bg-blue-500 rounded-l-lg flex items-center justify-center text-white text-xs font-bold shadow-inner">TRAIN (96,000 / 80%)</div>
+                <div class="w-1/5 h-8 bg-orange-400 rounded-r-lg flex items-center justify-center text-white text-xs font-bold shadow-inner">TEST (24,000 / 20%)</div>
+            </div>
+            <p class="text-sm text-slate-500">Model umumiy 120,000 ta tasodifiy gaplardan iborat ma'lumotlar bazasida (scikit-learn LogisticRegression orqali) o'qitildi.</p>
+        </div>
+
+        <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-purple-500">view_list</span>
+                Oldingi Dars Vazifalari
+            </h3>
+            <a href="{% url 'edu_slots' %}" class="block p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-purple-50 hover:border-purple-200 transition group mb-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-slate-800 group-hover:text-purple-700">50 ta gapni slotlarga ajratish (NER)</h4>
+                        <p class="text-xs text-slate-500 mt-1">Tashkilot, Fan/Mutaxassislik, Joy va Sana ajratilgan oyna.</p>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400 group-hover:text-purple-500">arrow_forward_ios</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- 3-QISM: NLP ISHCHI OYNASI (TESTING ZONE) -->
+    <section class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
+        <h3 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-4">Teskari Indeksatsiya, Tokenizatsiya va TF-IDF</h3>
+        
+        <form method="POST" action="{% url 'dataset_analytics' %}">
+            {% csrf_token %}
+            <div class="mb-4">
+                <textarea name="query" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-slate-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="O'zingiz xohlagan matnni yozing va mexanizmni ishga tushiring..." required>{{ query }}</textarea>
+            </div>
+            <button type="submit" class="bg-primary hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined">play_arrow</span> Ishga tushirish (Run)
+            </button>
+        </form>
+
+        {% if query %}
+        <div class="mt-8 space-y-6">
+            
+            <!-- Tokenlar -->
+            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-purple-500">cut</span> 1. Tokenizatsiya (Sanoq bilan)</h4>
+                <div class="flex flex-wrap gap-2">
+                    {% for word, count in token_counts.items %}
+                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-sm shadow-sm">{{ word }} <strong class="text-purple-600 ml-1">x{{ count }}</strong></span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Inverted Index -->
+            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-green-500">library_books</span> 2. Teskari Indeksatsiya (Inverted Index)</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {% for word, positions in inverted_index.items %}
+                        <div class="bg-white p-3 border border-slate-200 rounded-lg shadow-sm">
+                            <span class="font-bold text-slate-700">{{ word }}</span>
+                            <div class="text-xs text-slate-500 mt-1 font-mono">Pozitsiya: {{ positions }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Frequencies -->
+            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-orange-500">query_stats</span> 3. TF-IDF Chastotalari (Vaznlar)</h4>
+                <div class="space-y-2 max-w-xl">
+                    {% for word, weight in frequencies.items %}
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-bold text-slate-700 w-24 truncate" title="{{ word }}">{{ word }}</span>
+                        <div class="flex-1 mx-4 h-2 bg-slate-200 rounded-full overflow-hidden relative">
+                            <div class="absolute top-0 left-0 h-full bg-orange-400 rounded-full transition-all duration-1000" style="width: calc({{ weight }} * 100%)"></div>
+                        </div>
+                        <span class="text-sm font-mono text-orange-600">{{ weight }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Yuklab olish -->
+            <div class="mt-8 border-t pt-6 flex justify-end">
+                <form method="POST" action="{% url 'download_nlp_report' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="query" value="{{ query }}">
+                    <input type="hidden" name="tokens" value="{{ token_counts }}">
+                    <input type="hidden" name="frequencies" value="{{ frequencies }}">
+                    <input type="hidden" name="inverted_index" value="{{ inverted_index }}">
+                    <button type="submit" class="bg-slate-800 hover:bg-black text-white font-bold py-3 px-8 rounded-xl transition-all flex items-center gap-2 shadow-lg">
+                        <span class="material-symbols-outlined">download</span> Sublime Formatda Yuklab Olish (.txt)
+                    </button>
+                </form>
+            </div>
+            
+        </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

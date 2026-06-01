@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md mb-10">
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <h1 class="text-3xl font-bold text-blue-800">🧩 50 ta Gapni Slotlarga Ajratish (Slot Filling / NER)</h1>
+            <a href="{% url 'edu_search' %}" class="text-gray-500 hover:text-gray-800 font-medium bg-gray-100 px-4 py-2 rounded-full transition">← Qidiruvga qaytish</a>
+        </div>
+        
+        <p class="text-gray-600 mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100 shadow-sm">
+            <strong>Mavzu: Ta'lim.</strong> Soha bo'yicha 50 ta turli xil ma'lumotlar tahlil qilinib, ularning ichidan OTM, mutaxassislik va joy/sana ma'lumotlari avtomatik ajratib olindi.
+        </p>
+
+        <div class="overflow-x-auto rounded-lg shadow border border-gray-200">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-blue-600 text-white text-xs uppercase tracking-wider">
+                        <th class="p-3 border border-blue-700 text-center w-10">№</th>
+                        <th class="p-3 border border-blue-700 w-1/2">Haqiqiy Gap (Matn)</th>
+                        <th class="p-3 border border-blue-700 bg-blue-700 text-center">Tashkilot / OTM</th>
+                        <th class="p-3 border border-blue-700 bg-blue-700 text-center">Fan / Mutaxassislik</th>
+                        <th class="p-3 border border-blue-700 bg-blue-700 text-center">Joy / Sana</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm text-gray-700">
+                    {% for item in sentences %}
+                    <tr class="hover:bg-blue-50 transition border-b border-gray-200">
+                        <td class="p-3 border-r border-gray-200 font-bold text-gray-400 text-center">{{ forloop.counter }}</td>
+                        <td class="p-3 border-r border-gray-200 font-medium leading-relaxed">{{ item.text }}</td>
+                        
+                        <td class="p-3 border-r border-gray-200 text-center align-middle">
+                            {% if item.slots.Tashkilot != "-" %}
+                                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold text-xs shadow-sm">{{ item.slots.Tashkilot }}</span>
+                            {% else %}
+                                <span class="text-gray-300">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="p-3 border-r border-gray-200 text-center align-middle">
+                            {% if item.slots.Soha != "-" %}
+                                <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-bold text-xs shadow-sm">{{ item.slots.Soha }}</span>
+                            {% else %}
+                                <span class="text-gray-300">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="p-3 text-center align-middle">
+                            {% if item.slots.Sana != "-" %}
+                                <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-bold text-xs shadow-sm">{{ item.slots.Sana }}</span>
+                            {% else %}
+                                <span class="text-gray-300">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
