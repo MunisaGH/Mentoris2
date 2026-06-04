@@ -1,2 +1,0 @@
-[15/Apr/2026 17:14:58] "GET /accounts/google/login/ HTTP/1.1" 302 0
-[15/Apr/2026 17:14:58,640] - Broken pipe from ('127.0.0.1', 56019)

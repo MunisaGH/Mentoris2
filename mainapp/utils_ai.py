@@ -10,33 +10,53 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# ══════════════════ [P-10] SINGLETON: Embeddinglar har chaqiruvda qayta yuklanmaslik uchun ══════════════════
+_llm_instance = None
+_embeddings_instance = None
+
+
 def get_llm():
-    """Groq LLM modelini qaytaradi"""
-    return ChatGroq(
-        groq_api_key=settings.GROQ_API_KEY,
-        model_name="llama-3.3-70b-versatile",
-        temperature=0.3
-    )
+    """Groq LLM modelini qaytaradi (singleton)"""
+    global _llm_instance
+    if _llm_instance is None:
+        _llm_instance = ChatGroq(
+            groq_api_key=settings.GROQ_API_KEY,
+            model_name="llama-3.3-70b-versatile",
+            temperature=0.3
+        )
+    return _llm_instance
+
 
 def get_embeddings():
-    """HuggingFace orqali embedding yaratish (Local & Free)"""
-    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    """HuggingFace orqali embedding yaratish (Local & Free, singleton)"""
+    global _embeddings_instance
+    if _embeddings_instance is None:
+        _embeddings_instance = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    return _embeddings_instance
+
 
 import PyPDF2
+from docx import Document as DocxDocument
+
 
 def process_document(file_path, user_id):
     """
-    Hujjatni tahlil qilib, vektor bazaga joylash (RAG uchun)
+    Hujjatni tahlil qilib, vektor bazaga joylash (RAG uchun).
+    PDF, DOCX va TXT formatlarini qo'llab-quvvatlaydi.
     """
     text = ""
     try:
-        if str(file_path).lower().endswith('.pdf'):
+        file_path_str = str(file_path).lower()
+        if file_path_str.endswith('.pdf'):
             with open(file_path, 'rb') as f:
                 pdf_reader = PyPDF2.PdfReader(f)
                 for page in pdf_reader.pages:
                     page_text = page.extract_text()
                     if page_text:
                         text += page_text + "\n"
+        elif file_path_str.endswith('.docx'):
+            doc = DocxDocument(file_path)
+            text = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
         else:
             with open(file_path, 'r', encoding='utf-8') as f:
                 text = f.read()
@@ -48,32 +68,15 @@ def process_document(file_path, user_id):
         logger.error("Hujjatdan matn ajratib olinmadi.")
         return None
 
-    # 2. Matnni bo'laklarga bo'lish (Chunking)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-    chunks = text_splitter.split_text(text)
-    
-    docs = [Document(page_content=t, metadata={"user_id": user_id, "source": os.path.basename(file_path)}) for t in chunks]
+    # Matnni bo'laklarga ajratish
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    chunks = splitter.split_text(text)
+    documents = [Document(page_content=chunk, metadata={"user_id": str(user_id)}) for chunk in chunks]
 
-    # 3. Vektor bazaga saqlash
-    persist_directory = os.path.join(settings.BASE_DIR, 'chroma_db', f'user_{user_id}')
-    vector_db = Chroma.from_documents(
-        documents=docs,
-        embedding=get_embeddings(),
-        persist_directory=persist_directory
+    # Chroma vektor bazaga saqlash
+    vectorstore = Chroma.from_documents(
+        documents,
+        get_embeddings(),
+        persist_directory=str(settings.BASE_DIR / "chroma_db")
     )
-    return vector_db
-
-def query_user_documents(query, user_id):
-    """Foydalanuvchi hujjatlaridan javob qidirish"""
-    persist_directory = os.path.join(settings.BASE_DIR, 'chroma_db', f'user_{user_id}')
-    if not os.path.exists(persist_directory):
-        return ""
-
-    vector_db = Chroma(
-        persist_directory=persist_directory,
-        embedding_function=get_embeddings()
-    )
-    
-    results = vector_db.similarity_search(query, k=3)
-    context = "\n---\n".join([doc.page_content for doc in results])
-    return context
+    return vectorstore

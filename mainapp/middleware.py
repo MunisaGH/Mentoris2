@@ -4,20 +4,26 @@ from .models import AuditLog
 
 logger = logging.getLogger(__name__)
 
+# Faqat muhim amallarni loglash — performans uchun
+AUDIT_METHODS = {'POST', 'PUT', 'DELETE'}
+AUDIT_PATHS = {'/admin-panel/', '/accounts/login/', '/accounts/logout/'}
+SKIP_PREFIXES = ('/static/', '/media/', '/api/notifications', '/api/sessions/')
+
+
 class AuditMiddleware(MiddlewareMixin):
     def process_request(self, request):
-        # Statik fayllarni yoki admin panelning ba'zi yopiq API larini filter qilish mumkin
-        if request.path.startswith('/static/') or request.path.startswith('/media/'):
+        # Statik/media va tez-tez chaqiriladigan API larni filter qilish
+        if any(request.path.startswith(prefix) for prefix in SKIP_PREFIXES):
             return None
-        
+
+        # Faqat muhim amallar (POST/DELETE) yoki maxsus sahifalar loglanadi
+        if request.method not in AUDIT_METHODS and request.path not in AUDIT_PATHS:
+            return None
+
         user = request.user if request.user.is_authenticated else None
-        
-        # IP manzilni olish
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
+
+        # IP manzilni olish (REMOTE_ADDR ishonchli, X-Forwarded-For proxy orqali)
+        ip = request.META.get('REMOTE_ADDR', '0.0.0.0')
 
         # Amalni tahlil qilish
         action = f"Sahifa ochildi: {request.path}"
@@ -37,5 +43,5 @@ class AuditMiddleware(MiddlewareMixin):
             )
         except Exception as e:
             logger.error(f"AuditLog yozishda xatolik: {e}")
-            
+
         return None

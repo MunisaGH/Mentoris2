@@ -145,7 +145,7 @@
 <script>
 let activeSessionId = "{{ active_session.id }}";
 let isHistoryVisible = true;
-const LANG_PREFIX = "/{{ request.LANGUAGE_CODE|default:'uz' }}";
+
 
 document.addEventListener('DOMContentLoaded', () => {
     loadSessionMessages(activeSessionId);
@@ -198,7 +198,7 @@ async function loadSessionMessages(sessionId) {
     </div>`;
 
     try {
-        const response = await fetch(`${LANG_PREFIX}/api/session/${sessionId}/messages/`);
+        const response = await fetch(`/api/session/${sessionId}/messages/`);
         const data = await response.json();
         chat.innerHTML = '';
 
@@ -215,7 +215,7 @@ async function loadSessionMessages(sessionId) {
 
 async function createNewSession() {
     try {
-        const response = await fetch(`${LANG_PREFIX}/api/session/create/`, {
+        const response = await fetch('/api/session/create/', {
             method: 'POST',
             headers: { 'X-CSRFToken': '{{ csrf_token }}' }
         });
@@ -230,7 +230,7 @@ async function confirmDelete(sessionId, event) {
     event.stopPropagation();
     if (confirm("{{ T.confirm_delete }}")) {
         try {
-            const response = await fetch(`${LANG_PREFIX}/api/session/${sessionId}/delete/`, {
+            const response = await fetch(`/api/session/${sessionId}/delete/`, {
                 method: 'POST',
                 headers: { 'X-CSRFToken': '{{ csrf_token }}' }
             });

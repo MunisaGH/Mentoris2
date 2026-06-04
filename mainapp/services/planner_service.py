@@ -78,4 +78,15 @@ class PlannerService:
                 ],
                 "advice": "Esingizda bo'lsin, sifat miqdordan muhimroq. Har 50 daqiqada dam oling!"
             }
-        return {"error": "Plan generation failed"}
+        # Student va Professional uchun umumiy fallback reja
+        return {
+            "daily_goal": "Kasbiy rivojlanish va ko'nikmalarni mustahkamlash",
+            "schedule": [
+                {"time": "09:00 - 11:00", "task": "Asosiy fan bo'yicha dars yoki loyiha ishi", "type": "study"},
+                {"time": "11:00 - 12:00", "task": "Dam olish va nonushta", "type": "rest"},
+                {"time": "12:00 - 14:00", "task": "Amaliy mashq va mustaqil o'rganish", "type": "study"},
+                {"time": "14:00 - 15:00", "task": "Tushlik va shaxsiy vaqt", "type": "personal"},
+            ],
+            "advice": "Har kuni doimiy ritmda ishlash muvaffaqiyat kalitidir!"
+        }
+

@@ -106,7 +106,7 @@ async function syncOneID() {
     btn.classList.add('opacity-70');
 
     try {
-        const response = await fetch(`${LANG_PREFIX_BASE}/api/sync-oneid/`, {
+        const response = await fetch('/api/sync-oneid/', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',

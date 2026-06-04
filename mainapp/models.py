@@ -70,11 +70,6 @@ def create_user_profile(sender, instance, created, **kwargs):
         UserProfile.objects.create(user=instance)
 
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    profile, _ = UserProfile.objects.get_or_create(user=instance)
-    profile.save()
-
 class Recommendation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -88,7 +83,7 @@ class Recommendation(models.Model):
 
 class ChatSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_sessions')
-    title = models.CharField(max_length=255, default="Yangi suhbat")
+    title = models.CharField(max_length=255, default="New chat")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -114,7 +109,7 @@ class Subject(models.Model):
     description = models.TextField(blank=True)
     icon = models.CharField(max_length=50, default='book')
 
-    def __cl__(self):
+    def __str__(self):
         return self.name
 
 class EducationalResource(models.Model):

@@ -408,7 +408,6 @@
 </div>
 
 <script>
-    const LANG_PREFIX_BASE = "/{{ request.LANGUAGE_CODE|default:'uz' }}";
     let activePanelSessionId = null;
     let historyVisible = true;
     let panelLoaded = false;
@@ -444,7 +443,7 @@
     // ── Load sessions ─────────────────────────────────────────
     async function loadPanelSessions() {
         try {
-            const resp = await fetch(`${LANG_PREFIX_BASE}/api/sessions/`);
+            const resp = await fetch('/api/sessions/');
             const data = await resp.json();
             renderSessionList(data.sessions, data.active_id);
             loadPanelSession(data.active_id);
@@ -476,7 +475,7 @@
         const chat = document.getElementById('panel-chat');
         chat.innerHTML = `<div class="flex justify-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>`;
         try {
-            const resp = await fetch(`${LANG_PREFIX_BASE}/api/session/${sessionId}/messages/`);
+            const resp = await fetch(`/api/session/${sessionId}/messages/`);
             const data = await resp.json();
             chat.innerHTML = '';
             if (!data.messages || data.messages.length === 0) {
@@ -549,7 +548,7 @@
 
     async function createNewPanelSession() {
         try {
-            const resp = await fetch(`${LANG_PREFIX_BASE}/api/session/create/`, {
+            const resp = await fetch('/api/session/create/', {
                 method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }
             });
             const data = await resp.json();
@@ -581,7 +580,7 @@
     async function fetchNotifications() {
         const list = document.getElementById('notif-list');
         try {
-            const resp = await fetch(`${LANG_PREFIX_BASE}/api/notifications/`);
+            const resp = await fetch('/api/notifications/');
             const data = await resp.json();
             list.innerHTML = '';
             if (!data.notifications.length) {
@@ -600,7 +599,7 @@
 
     async function markAllRead() {
         try {
-            const resp = await fetch(`${LANG_PREFIX_BASE}/api/notifications/mark-all-read/`, {
+            const resp = await fetch('/api/notifications/mark-all-read/', {
                 method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }
             });
             const data = await resp.json();

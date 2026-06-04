@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 venv/
+.venv/
 .env
 
 # Database
@@ -12,11 +13,16 @@ db.sqlite3
 media/
 static_root/
 
+# Logs
+*.log
+
 # IDE
 .vscode/
 .idea/
 
+# Chroma vector DB
+chroma_db/
+
 # Other Projects (DO NOT PUSH)
 Career AI/
 Career AI
-旋

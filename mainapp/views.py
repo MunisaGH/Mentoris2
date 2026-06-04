@@ -148,10 +148,10 @@ def dashboard(request):
         return render(request, "daily.html", {"is_guest": True})
     
     profile = get_user_profile(request.user)
-    if not profile.role_selected:
+    if not profile.role_selected and not request.user.is_superuser:
         return redirect("complete_profile")
         
-    if request.user.is_staff:
+    if request.user.is_superuser:
         return redirect("admin_dashboard")
         
     if profile.user_role == 'applicant':
@@ -624,10 +624,13 @@ def submit_test(request, unit_id):
     })
 
 @login_required
+@role_required(allowed_roles=['applicant', 'student'])
 def generate_plan_api(request):
     """
     AI yordamida balanslangan reja tuzadi va emailga yuboradi.
     """
+    if request.method != "POST":
+        return JsonResponse({"error": "Faqat POST so'rovi qabul qilinadi."}, status=405)
     profile = get_user_profile(request.user)
     planner = PlannerService()
     
@@ -653,10 +656,10 @@ def generate_plan_api(request):
     # 2. Email yuborish
     try:
         subject = f"Assalomu alaykum, {request.user.first_name}! Bugungi rejangiz tayyor."
-        message = f"Bugungi asosiy maqsad: {plan['daily_goal']}\n\nJadval:\n"
-        for item in plan['schedule']:
+        message = f"Bugungi asosiy maqsad: {plan.get('daily_goal', 'Reja')}\n\nJadval:\n"
+        for item in plan.get('schedule', []):
             message += f"- {item['time']}: {item['task']} ({item['type']})\n"
-        message += f"\nMaslahat: {plan['advice']}\n\nMentoris AI - Kelajagingizni biz bilan quring!"
+        message += f"\nMaslahat: {plan.get('advice', '')}\n\nMentoris AI - Kelajagingizni biz bilan quring!"
         
         send_mail(
             subject,
@@ -666,7 +669,7 @@ def generate_plan_api(request):
             fail_silently=True,
         )
     except Exception as e:
-        logger.error(f"Email error: {e}")
+        logger.warning(f"Email yuborishda xatolik (foydalanuvchi hali ham rejani ko'radi): {e}")
 
     return JsonResponse({"success": True, "plan": plan})
 
@@ -675,6 +678,8 @@ def toggle_task_api(request, task_id):
     """
     Vazifa holatini o'zgartiradi (done/pending).
     """
+    if request.method != "POST":
+        return JsonResponse({"error": "Faqat POST so'rovi qabul qilinadi."}, status=405)
     profile = get_user_profile(request.user)
     plan = profile.daily_plan_json
     
