@@ -1,12 +1,21 @@
+# ══════ Core ══════
 django>=5.1,<7.0
-groq
 python-dotenv
 django-allauth
 requests
 django-csp
-python-magic-bin
-PyPDF2
-python-docx
+
+# ══════ Django REST Framework ══════
+djangorestframework>=3.15
+djangorestframework-simplejwt
+django-filter
+django-cors-headers
+
+# ══════ Database ══════
+psycopg2-binary
+
+# ══════ AI — Groq (LLaMA) ══════
+groq
 langchain-community
 langchain-core
 langchain-groq
@@ -14,3 +23,12 @@ langchain-huggingface
 langchain-text-splitters
 chromadb
 sentence-transformers
+
+# ══════ AI — OpenAI ══════
+openai
+tiktoken
+
+# ══════ Document Processing ══════
+PyPDF2
+python-docx
+python-magic-bin
