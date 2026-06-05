@@ -7,78 +7,385 @@
     <!-- Header Area -->
     <div class="flex justify-between items-end mb-12">
         <div>
-            <p class="text-[11px] font-black text-primary/50 uppercase tracking-[0.3em] mb-3">Talaba Paneli</p>
+            <p class="text-[11px] font-black text-primary/50 uppercase tracking-[0.3em] mb-3">Daily Assistant</p>
             <h1 class="text-6xl font-headline font-black text-slate-900 tracking-tight leading-[1.1]">
                 Salom, {{ user.first_name }}.<br/>
-                <span class="text-slate-300">Karyera va akademik rivojlanish sari!</span>
+                <span class="text-slate-300">Kunlik rejangiz tayyor.</span>
             </h1>
         </div>
         
         <div class="flex items-center gap-6">
             <div class="bg-white px-8 py-4 rounded-[2rem] shadow-xl border border-slate-50 text-center relative overflow-hidden">
                 <div class="relative z-10">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">GPA Ko'rsatkichi</p>
-                    <div class="text-3xl font-black text-emerald-500">Hozircha yo'q</div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Bugungi Sana</p>
+                    <div class="text-3xl font-black text-primary" id="current-date">Yuklanmoqda...</div>
                 </div>
             </div>
+            <button onclick="generateAIPlan()" id="btn-ai-plan" class="gradient-button px-8 py-5 rounded-[2rem] text-white font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all flex items-center gap-3">
+                <span class="material-symbols-outlined">auto_awesome</span>
+                AI Reja Tuzish
+            </button>
         </div>
     </div>
 
     <!-- Dashboard Content -->
-    <div class="grid grid-cols-12 gap-10">
-        <!-- Main Timeline / Content -->
-        <div class="col-span-12 lg:col-span-7 space-y-8">
-            <div class="bg-white rounded-[3rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-100">
-                <div class="flex justify-between items-center mb-10">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-primary">
-                            <span class="material-symbols-outlined text-3xl">psychology</span>
+    <div class="grid grid-cols-12 gap-8">
+        
+        <!-- Left Column: Schedule & Tasks -->
+        <div class="col-span-12 lg:col-span-8 space-y-8">
+            
+            <!-- Schedule Section -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                            <span class="material-symbols-outlined">calendar_today</span>
                         </div>
-                        <h2 class="text-2xl font-headline font-bold text-slate-800">Mentor AI (RAG Tizimi)</h2>
+                        <h2 class="text-xl font-headline font-bold text-slate-800">Bugungi Jadval</h2>
                     </div>
+                    <button onclick="openScheduleModal()" class="text-sm font-bold text-primary hover:text-secondary transition-colors">
+                        + Yangi dars
+                    </button>
                 </div>
-
-                <div class="space-y-4">
-                    <p class="text-slate-600 mb-6">O'z ma'ruzalaringiz va kitoblaringizni yuklab AI orqali ularni o'zlashtiring yoki ulardan qidiruv ishlari uchun foydalaning.</p>
-                    <a href="/mentor/" class="inline-block px-8 py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-xl shadow-primary/20 hover:scale-105 transition-all">
-                        RAG Mentor bilan muloqot
-                    </a>
+                
+                <div id="schedule-container" class="space-y-4">
+                    <!-- Schedule items will be injected here -->
+                    <div class="text-center py-6 text-slate-400 text-sm">Jadval yuklanmoqda...</div>
                 </div>
             </div>
 
-            <!-- Career Hub Promotion -->
-            <div class="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-                <div class="relative z-10 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-2xl font-headline font-black mb-2">Karyera Yo'l Xaritasi</h3>
-                        <p class="text-slate-400 text-sm max-w-md">Universitet darsliklarini bozor ehtiyojlariga moslashtirish, stajirovka va ish o'rinlari monitoringi.</p>
+            <!-- Tasks Section -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                            <span class="material-symbols-outlined">task_alt</span>
+                        </div>
+                        <h2 class="text-xl font-headline font-bold text-slate-800">Vazifalar</h2>
                     </div>
-                    <a href="/career/" class="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:bg-primary hover:text-white transition-all shadow-xl">
-                        KARYERA HUB
-                    </a>
+                    <button onclick="openTaskModal()" class="text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
+                        + Yangi vazifa
+                    </button>
                 </div>
-                <span class="material-symbols-outlined absolute -right-8 -bottom-8 text-[12rem] opacity-5">work</span>
+                
+                <!-- Task Board -->
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Bajarilishi kerak -->
+                    <div class="bg-slate-50 rounded-2xl p-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Bajarilishi kerak</h3>
+                        <div id="tasks-todo" class="space-y-3">
+                            <!-- Todo items -->
+                        </div>
+                    </div>
+                    
+                    <!-- Bajarildi -->
+                    <div class="bg-slate-50 rounded-2xl p-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Bajarildi (Bugun)</h3>
+                        <div id="tasks-done" class="space-y-3">
+                            <!-- Done items -->
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
 
-        <!-- Sidebar Info -->
-        <div class="col-span-12 lg:col-span-5 space-y-8">
-            <!-- Akademik Skills -->
-            <div class="bg-gradient-to-br from-primary to-blue-900 rounded-[3rem] p-10 text-white relative overflow-hidden">
-                <h4 class="text-xl font-black mb-4">Mening Ko'nikmalarim</h4>
-                <ul class="text-xs text-blue-200 leading-relaxed list-disc list-inside mt-4">
-                    {% if profile.skills_json %}
-                        {% for skill in profile.skills_json %}
-                            <li>{{ skill }}</li>
-                        {% endfor %}
-                    {% else %}
-                        <li>Ko'nikmalar kiritilmagan. Sozlamalarga o'tib kiritib qo'ying.</li>
-                    {% endif %}
-                </ul>
-                <span class="material-symbols-outlined absolute -right-6 -bottom-6 text-[10rem] opacity-10">verified</span>
-            </div>
+        <!-- Right Column: Goals & Promos -->
+        <div class="col-span-12 lg:col-span-4 space-y-8">
             
+            <!-- Goals Section -->
+            <div class="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                                <span class="material-symbols-outlined">flag</span>
+                            </div>
+                            <h2 class="text-xl font-headline font-bold text-white">Maqsadlar</h2>
+                        </div>
+                    </div>
+                    
+                    <div id="goals-container" class="space-y-6">
+                        <!-- Goals will be injected here -->
+                        <div class="text-center py-6 text-slate-400 text-sm">Maqsadlar yuklanmoqda...</div>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined absolute -right-6 -bottom-6 text-[10rem] opacity-5">sports_score</span>
+            </div>
+
+            <!-- Stats Mini -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Statistika</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-blue-50 rounded-xl p-4 text-center">
+                        <div class="text-2xl font-black text-blue-600" id="stat-total-tasks">0</div>
+                        <div class="text-[10px] font-bold text-blue-400 uppercase tracking-wider mt-1">Jami vazifalar</div>
+                    </div>
+                    <div class="bg-emerald-50 rounded-xl p-4 text-center">
+                        <div class="text-2xl font-black text-emerald-600" id="stat-completed-today">0</div>
+                        <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mt-1">Bugun bajarildi</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mentor AI Promo -->
+            <div class="bg-gradient-to-br from-primary to-blue-900 rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform cursor-pointer" onclick="window.location.href='/mentor/'">
+                <div class="relative z-10">
+                    <h3 class="text-xl font-headline font-black mb-2">Mentor AI</h3>
+                    <p class="text-blue-200 text-xs mb-4">RAG tizimi orqali hujjatlaringiz bilan aqlli suhbat qiling.</p>
+                    <span class="inline-block px-4 py-2 bg-white/20 rounded-lg text-xs font-bold">Muloqotni boshlash &rarr;</span>
+                </div>
+                <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-[8rem] opacity-10 group-hover:scale-110 transition-transform">psychology</span>
+            </div>
+
         </div>
     </div>
 </div>
+
+<!-- Modals -->
+<div id="task-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-[2rem] p-8 w-[400px] shadow-2xl">
+        <h3 class="text-xl font-bold text-slate-800 mb-6">Yangi Vazifa</h3>
+        <form id="task-form" onsubmit="submitTask(event)">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Sarlavha</label>
+                    <input type="text" id="task-title" required class="w-full bg-slate-50 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Muhimlik (Priority)</label>
+                    <select id="task-priority" class="w-full bg-slate-50 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                        <option value="low">Past</option>
+                        <option value="medium" selected>O'rta</option>
+                        <option value="high">Yuqori</option>
+                        <option value="urgent">Shoshilinch</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Deadline</label>
+                    <input type="datetime-local" id="task-deadline" class="w-full bg-slate-50 border-0 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-8">
+                <button type="button" onclick="closeTaskModal()" class="flex-1 px-4 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200">Bekor qilish</button>
+                <button type="submit" class="flex-1 px-4 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // CSRF Token olish
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+    };
+
+    // Load Dashboard Data
+    async function loadDashboard() {
+        try {
+            const res = await fetch('/api/v1/daily/dashboard/', { headers });
+            if (!res.ok) throw new Error("API error");
+            const data = await res.json();
+            
+            // Format Date
+            const d = new Date(data.date);
+            document.getElementById('current-date').innerText = d.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long' });
+
+            // Stats
+            document.getElementById('stat-total-tasks').innerText = data.stats.total_tasks;
+            document.getElementById('stat-completed-today').innerText = data.stats.completed_today;
+
+            // Render Schedule
+            renderSchedule(data.schedule);
+            
+            // Render Tasks
+            renderTasks(data.tasks);
+
+            // Render Goals
+            renderGoals(data.goals);
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function renderSchedule(schedule) {
+        const container = document.getElementById('schedule-container');
+        if (schedule.length === 0) {
+            container.innerHTML = '<div class="text-center py-6 text-slate-400 text-sm">Bugun uchun jadval yo\'q.</div>';
+            return;
+        }
+        
+        let html = '';
+        schedule.forEach(item => {
+            const typeColors = {
+                'study': 'bg-blue-100 text-blue-700',
+                'work': 'bg-purple-100 text-purple-700',
+                'rest': 'bg-emerald-100 text-emerald-700',
+                'personal': 'bg-orange-100 text-orange-700'
+            };
+            const colorClass = typeColors[item.task_type] || 'bg-slate-100 text-slate-700';
+            
+            html += `
+                <div class="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="text-center min-w-[70px]">
+                        <div class="text-sm font-bold text-slate-800">${item.start_time.substring(0,5)}</div>
+                        <div class="text-xs font-medium text-slate-400">${item.end_time.substring(0,5)}</div>
+                    </div>
+                    <div class="w-1 h-10 bg-slate-200 rounded-full"></div>
+                    <div class="flex-1">
+                        <div class="text-sm font-bold text-slate-800">${item.title}</div>
+                        <div class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${colorClass}">
+                            ${item.task_type}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function renderTasks(tasks) {
+        const todoContainer = document.getElementById('tasks-todo');
+        const doneContainer = document.getElementById('tasks-done');
+        
+        let todoHtml = '';
+        let doneHtml = '';
+
+        tasks.forEach(task => {
+            const priorityColors = {
+                'low': 'text-slate-400',
+                'medium': 'text-blue-500',
+                'high': 'text-orange-500',
+                'urgent': 'text-red-500'
+            };
+            const pColor = priorityColors[task.priority] || 'text-slate-400';
+            
+            const isDone = task.status === 'done';
+            
+            const taskCard = `
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex items-start gap-3 group">
+                    <button onclick="toggleTaskStatus('${task.id}', '${task.status}')" class="mt-0.5 flex-shrink-0 text-slate-300 hover:${isDone ? 'text-slate-400' : 'text-emerald-500'} transition-colors">
+                        <span class="material-symbols-outlined text-xl">${isDone ? 'check_circle' : 'radio_button_unchecked'}</span>
+                    </button>
+                    <div>
+                        <div class="text-sm font-medium ${isDone ? 'text-slate-400 line-through' : 'text-slate-700'}">${task.title}</div>
+                        <div class="flex items-center gap-2 mt-1 opacity-60">
+                            <span class="material-symbols-outlined text-[12px] ${pColor}">flag</span>
+                            ${task.deadline ? `<span class="text-[10px] font-medium text-slate-500">${new Date(task.deadline).toLocaleDateString()}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (isDone) doneHtml += taskCard;
+            else todoHtml += taskCard;
+        });
+
+        todoContainer.innerHTML = todoHtml || '<div class="text-center py-4 text-slate-400 text-xs">Vazifalar yo\'q</div>';
+        doneContainer.innerHTML = doneHtml || '<div class="text-center py-4 text-slate-400 text-xs">Hali bajarilmadi</div>';
+    }
+
+    function renderGoals(goals) {
+        const container = document.getElementById('goals-container');
+        if (goals.length === 0) {
+            container.innerHTML = '<div class="text-center py-6 text-slate-400 text-sm">Faol maqsadlar yo\'q.</div>';
+            return;
+        }
+
+        let html = '';
+        goals.forEach(goal => {
+            html += `
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <div class="text-sm font-bold text-white">${goal.title}</div>
+                        <div class="text-xs font-bold text-blue-300">${goal.progress}%</div>
+                    </div>
+                    <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 rounded-full" style="width: ${goal.progress}%"></div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // Modal funksiyalari
+    function openTaskModal() { document.getElementById('task-modal').classList.remove('hidden'); }
+    function closeTaskModal() { document.getElementById('task-modal').classList.add('hidden'); }
+    
+    function openScheduleModal() { alert('Jadval qo\'shish keyingi yangilanishda!'); }
+
+    async function submitTask(e) {
+        e.preventDefault();
+        const title = document.getElementById('task-title').value;
+        const priority = document.getElementById('task-priority').value;
+        const deadline = document.getElementById('task-deadline').value;
+
+        try {
+            const res = await fetch('/api/v1/tasks/', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    title, priority, deadline: deadline || null, status: 'todo'
+                })
+            });
+            if (res.ok) {
+                closeTaskModal();
+                document.getElementById('task-form').reset();
+                loadDashboard(); // qayta yuklash
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function toggleTaskStatus(taskId, currentStatus) {
+        const newStatus = currentStatus === 'done' ? 'todo' : 'done';
+        try {
+            await fetch(`/api/v1/tasks/${taskId}/`, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ status: newStatus })
+            });
+            loadDashboard();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function generateAIPlan() {
+        const btn = document.getElementById('btn-ai-plan');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Reja tuzilmoqda...';
+        btn.disabled = true;
+
+        // API placeholder for AI planning
+        setTimeout(() => {
+            alert('AI Reja generatsiya qilindi! (Backend integratsiya kutilmoqda)');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 1500);
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
 {% endblock %}
