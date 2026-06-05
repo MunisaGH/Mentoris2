@@ -1,92 +1,122 @@
 import json
 import logging
+from datetime import date, datetime, timedelta
 from django.conf import settings
+from django.utils import timezone
 from groq import Groq
+from openai import OpenAI
+
+from ..models import Task, Schedule, UserProfile
 
 logger = logging.getLogger(__name__)
 
 class PlannerService:
     def __init__(self):
-        self.client = Groq(api_key=settings.GROQ_API_KEY) if settings.GROQ_API_KEY else None
+        self.openai_client = OpenAI(api_key=settings.OPENAI_API_KEY) if hasattr(settings, 'OPENAI_API_KEY') and settings.OPENAI_API_KEY else None
+        self.groq_client = Groq(api_key=settings.GROQ_API_KEY) if hasattr(settings, 'GROQ_API_KEY') and settings.GROQ_API_KEY else None
 
-    def generate_balanced_plan(self, user_profile):
+    def generate_and_save_plan(self, user):
         """
-        AI yordamida abituriyent uchun balanslangan kunlik reja tuzadi.
-        Strategiya: 60% Dars, 20% Dam olish, 20% Shaxsiy hayot.
+        AI orqali reja tuzadi va bazadagi Task/Schedule modellariga saqlaydi.
         """
-        if not self.client:
-            return self._get_fallback_plan(user_profile.user_role)
-
-        role_context = "Abituriyent (OTMga kirishga tayyorgarlik)" if user_profile.user_role == 'applicant' else "Talaba"
+        profile, _ = UserProfile.objects.get_or_create(user=user)
         
+        # 1. Kontekst yig'ish
+        role_context = "Abituriyent" if profile.user_role == 'applicant' else "Talaba/Mutaxassis"
+        target = profile.target_university if profile.user_role == 'applicant' else profile.selected_field
+        skills = ", ".join(profile.skills_json) if profile.skills_json else "Hali kiritilmagan"
+        
+        # Qarz vazifalar (muddati o'tgan)
+        backlog_tasks = Task.objects.filter(user=user, status='todo', deadline__lt=timezone.now())
+        backlog_text = ", ".join([t.title for t in backlog_tasks]) if backlog_tasks.exists() else "Yo'q"
+
         prompt = f"""
         Foydalanuvchi roli: {role_context}
-        Foydalanuvchi ismi: {user_profile.user.first_name}
-        Maqsadi: {user_profile.target_university if user_profile.user_role == 'applicant' else user_profile.selected_field}
+        Foydalanuvchi ismi: {user.first_name or user.username}
+        Maqsadi: {target or 'Belgilanmagan'}
+        Joriy ko'nikmalari: {skills}
+        Bajarilmagan qarz vazifalari (Backlog): {backlog_text}
 
-        Vazifa: Ushbu foydalanuvchi uchun 1 kunlik professional va balanslangan reja tuzib ber.
+        Vazifa: Ushbu foydalanuvchi uchun bugunga (1 kunlik) professional va balanslangan reja tuzib ber.
         SHARTLAR:
-        1. Faqat dars bo'lmasin. Dam olish, ovqatlanish va shaxsiy vaqtni (xobbi, sport) ham qo'sh.
-        2. Strategiya: Pomodoro (50 daqiqa dars, 10 daqiqa tanaffus).
-        3. Javobni JSON formatida qaytar. Format:
+        1. 60% dars/ish, 20% dam olish, 20% shaxsiy vaqt bo'lsin.
+        2. Agar qarz vazifalari (Backlog) bo'lsa, avval shularni tugatishni jadvalga qo'sh.
+        3. Jadval (schedule) va aniq qilinadigan ishlar ro'yxatini (tasks) ber.
+        4. Javobni FAQAT to'g'ri JSON formatida qaytar. Hech qanday markdown (```json) ishlatma.
+
+        JSON FORMATI:
         {{
-            "daily_goal": "Bugungi asosiy maqsad",
-            "schedule": [
-                {{"time": "08:00 - 09:30", "task": "Vazifa nomi", "type": "study/rest/personal"}},
-                ...
+            "tasks": [
+                {{"title": "Matematikadan 1-mavzu", "priority": "high", "description": "Batafsil tushuntirish"}},
+                {{"title": "Ingliz tili lug'at 50ta", "priority": "medium", "description": ""}}
             ],
-            "advice": "AI Mentor'dan kunlik maslahat"
+            "schedule": [
+                {{"start_time": "08:00", "end_time": "10:00", "title": "Matematika o'qish", "task_type": "study", "description": "Fokus bilan o'qish"}},
+                {{"start_time": "10:00", "end_time": "10:30", "title": "Nonushta va dam", "task_type": "rest", "description": ""}},
+                {{"start_time": "10:30", "end_time": "12:00", "title": "Ingliz tili", "task_type": "study", "description": ""}}
+            ]
         }}
         """
 
         try:
-            completion = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[
-                    {"role": "system", "content": "Sen professional akademik mentor va psixologsan. Foydalanuvchilarni dars bilan ko'mib tashlamasdan, ularga eng samarali va balanslangan reja tuzib berasan."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"}
-            )
-            plan = json.loads(completion.choices[0].message.content)
+            # AI chaqirish (OpenAI birinchi, yo'q bo'lsa Groq)
+            plan_json = None
+            if self.openai_client:
+                response = self.openai_client.chat.completions.create(
+                    model="gpt-4o-mini",  # Yoki gpt-3.5-turbo
+                    messages=[
+                        {"role": "system", "content": "Sen professional akademik mentorsan. Javob faqat JSON bo'lishi shart."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    response_format={"type": "json_object"}
+                )
+                plan_json = json.loads(response.choices[0].message.content)
+            elif self.groq_client:
+                response = self.groq_client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[
+                        {"role": "system", "content": "Sen professional akademik mentorsan. Javob faqat JSON bo'lishi shart."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    response_format={"type": "json_object"}
+                )
+                plan_json = json.loads(response.choices[0].message.content)
+            else:
+                raise Exception("AI API klyuchlari topilmadi!")
+
+            # 2. Bazaga yozish
+            today = date.today()
             
-            # Initializing tasks for tracking
-            tasks = []
-            for i, item in enumerate(plan.get('schedule', [])):
-                tasks.append({
-                    "id": i,
-                    "task": item['task'],
-                    "time": item['time'],
-                    "type": item['type'],
-                    "status": "pending"
-                })
-            plan['tasks'] = tasks
-            return plan
+            # Bugungi eski AI yaratgan jadvallarni o'chiramiz (yangilash uchun)
+            Schedule.objects.filter(user=user, date=today).delete()
+            
+            # Jadvalni saqlash
+            for item in plan_json.get('schedule', []):
+                Schedule.objects.create(
+                    user=user,
+                    date=today,
+                    start_time=item.get('start_time', '00:00'),
+                    end_time=item.get('end_time', '01:00'),
+                    title=item.get('title', 'Vazifa'),
+                    task_type=item.get('task_type', 'study'),
+                    description=item.get('description', '')
+                )
+            
+            # Tasklarni saqlash (hozirgi kun oxirigacha deadline qilib)
+            deadline = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+            for item in plan_json.get('tasks', []):
+                # Faqat yangi tasks yaratamiz
+                Task.objects.create(
+                    user=user,
+                    title=item.get('title', 'Vazifa'),
+                    priority=item.get('priority', 'medium'),
+                    description=item.get('description', ''),
+                    status='todo',
+                    deadline=deadline
+                )
+
+            return {"success": True, "message": "Reja muvaffaqiyatli tuzildi"}
+
         except Exception as e:
-            logger.error(f"Plan generation error: {e}")
-            return self._get_fallback_plan(user_profile.user_role)
-
-    def _get_fallback_plan(self, role):
-        if role == 'applicant':
-            return {
-                "daily_goal": "Matematika va Ingliz tili bazasini mustahkamlash",
-                "schedule": [
-                    {"time": "08:00 - 10:00", "task": "Asosiy fan: Matematika darslari", "type": "study"},
-                    {"time": "10:00 - 11:00", "task": "Yengil dam olish va nonushta", "type": "rest"},
-                    {"time": "11:00 - 13:00", "task": "Ingliz tili: Grammatika va Listening", "type": "study"},
-                    {"time": "13:00 - 14:30", "task": "Tushlik va shaxsiy vaqt", "type": "personal"},
-                ],
-                "advice": "Esingizda bo'lsin, sifat miqdordan muhimroq. Har 50 daqiqada dam oling!"
-            }
-        # Student va Professional uchun umumiy fallback reja
-        return {
-            "daily_goal": "Kasbiy rivojlanish va ko'nikmalarni mustahkamlash",
-            "schedule": [
-                {"time": "09:00 - 11:00", "task": "Asosiy fan bo'yicha dars yoki loyiha ishi", "type": "study"},
-                {"time": "11:00 - 12:00", "task": "Dam olish va nonushta", "type": "rest"},
-                {"time": "12:00 - 14:00", "task": "Amaliy mashq va mustaqil o'rganish", "type": "study"},
-                {"time": "14:00 - 15:00", "task": "Tushlik va shaxsiy vaqt", "type": "personal"},
-            ],
-            "advice": "Har kuni doimiy ritmda ishlash muvaffaqiyat kalitidir!"
-        }
-
+            logger.error(f"AI Plan Generation Error: {e}")
+            return {"success": False, "message": str(e)}

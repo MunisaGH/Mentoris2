@@ -26,6 +26,7 @@ v1_patterns = [
 
     # Daily Dashboard
     path('daily/dashboard/', api_views.DailyDashboardView.as_view(), name='api_daily_dashboard'),
+    path('daily/ai-plan/', api_views.AIPlanView.as_view(), name='api_ai_plan'),
 
     # Career
     path('career/matches/', api_views.CareerMatchView.as_view(), name='api_career_matches'),

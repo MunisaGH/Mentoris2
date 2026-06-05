@@ -375,12 +375,24 @@
         btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Reja tuzilmoqda...';
         btn.disabled = true;
 
-        // API placeholder for AI planning
-        setTimeout(() => {
-            alert('AI Reja generatsiya qilindi! (Backend integratsiya kutilmoqda)');
+        try {
+            const res = await fetch('/api/v1/daily/ai-plan/', {
+                method: 'POST',
+                headers
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                loadDashboard(); // yangi rejani yuklash
+            } else {
+                alert("Xatolik: " + (data.error || "Ulanishda xatolik"));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Internet yoki server xatosi");
+        } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
-        }, 1500);
+        }
     }
 
     // Initial load

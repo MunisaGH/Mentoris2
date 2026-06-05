@@ -128,6 +128,20 @@ class DailyDashboardView(APIView):
         })
 
 
+class AIPlanView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from .services.planner_service import PlannerService
+        planner = PlannerService()
+        result = planner.generate_and_save_plan(request.user)
+        
+        if result.get("success"):
+            return Response({"success": True, "message": result["message"]})
+        else:
+            return Response({"success": False, "error": result.get("message")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 # ══════════════════ CHAT SESSIONS (TZ 3.2) ══════════════════
 
 class ChatSessionViewSet(viewsets.ModelViewSet):
